@@ -2,6 +2,19 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.17] - 2026-11-20
+
+### Ditambahkan
+- **Indikator proses di kolom output**: spinner + `⏳ BERJALAN — <aksi>` dan timer `1s`, `2s`, ... setiap 0,5 detik; berakhir `✅ SELESAI n detik` / `❌ GAGAL n detik`.
+- **Timestamp** `HH:mm:ss` di setiap baris log.
+- Tombol `⤓` untuk kembali ke baris terbaru saat log digulir ke atas.
+- Log otomatis dipangkas setelah ±700 baris agar tetap ringan.
+
+### Diperbaiki
+- **Gulir log tidak bisa ke atas** - ScrollView halaman tidak lagi merebut gestur di dalam kotak output (`requestDisallowInterceptTouchEvent`).
+- **Auto-scroll menarik balik saat membaca** - auto-scroll hanya aktif bila posisi log sudah di paling bawah.
+- HAPUS WAN, TAMBAH/SIMPAN WAN, BACA CONFIG, ENCRYPT CONFIG, dan AUTO-LOGIN kini ikut menampilkan indikator proses.
+
 ## [v2.16] - 2026-11-20
 
 ### Diperbaiki

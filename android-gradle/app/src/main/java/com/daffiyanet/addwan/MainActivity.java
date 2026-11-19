@@ -26,10 +26,18 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
 
     private EditText etIp, etMac, etUser, etPass, etSn;
-    private TextView tvLog, tvStatus;
+    private TextView tvLog, tvStatus, tvRunState;
+    private android.widget.ProgressBar pbRun;
+    private Button bFollowLog;
     private android.widget.ScrollView logScroll;
     private android.widget.Spinner spPort;
     private String ontSessionId = null;
+    private final android.os.Handler uiHandler = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final java.util.concurrent.atomic.AtomicInteger activeTasks = new java.util.concurrent.atomic.AtomicInteger(0);
+    private Runnable ticker;
+    private long taskStart;
+    private int logLines = 0;
+    private boolean logFollow = true;
     private final java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newCachedThreadPool();
 
     private static final int BG = 0xFF070B1A;
@@ -53,17 +61,23 @@ public class MainActivity extends Activity {
     private void autoRefreshOnt() {
         if (etPass == null || etPass.getText().length() == 0) return;
         io.execute(() -> {
+            taskStarted("AUTO-LOGIN");
+            boolean ok = true;
             try {
                 log("auto-login ke ONT...");
                 String sid = ontLogin();
                 if (sid == null) {
                     log("auto-login gagal");
+                    ok = false;
                     return;
                 }
                 logJson("uplink_info", ontCgi("get_uplink_info", null));
                 logJson("acl_info", ontCgi("get_acl_info", null));
             } catch (Exception e) {
+                ok = false;
                 log("auto-refresh error: " + e);
+            } finally {
+                taskFinished(ok);
             }
         });
     }
@@ -216,8 +230,13 @@ public class MainActivity extends Activity {
         logHeader.setTextSize(11);
         logHeader.setTypeface(Typeface.MONOSPACE);
         logHeader.setTextColor(0xFFFF5C5C);
-        logHeader.setPadding(0, 0, 0, dp(8));
-        logHead.addView(logHeader, lp(0, 1f, 0, 0, dp(8), 0));
+        logHead.addView(logHeader, lp(0, 1f, 0, 0, dp(6), 0));
+
+        pbRun = new android.widget.ProgressBar(this, null, android.R.attr.progressBarStyleSmall);
+        pbRun.setIndeterminate(true);
+        pbRun.setVisibility(View.GONE);
+        pbRun.getIndeterminateDrawable().setColorFilter(0xFFFFD54A, android.graphics.PorterDuff.Mode.SRC_IN);
+        logHead.addView(pbRun, new LinearLayout.LayoutParams(dp(20), dp(20)));
 
         Button bCopyLog = new Button(this);
         bCopyLog.setText("SALIN");
@@ -225,12 +244,41 @@ public class MainActivity extends Activity {
         bCopyLog.setTextSize(10);
         bCopyLog.setTextColor(0xFF00E5FF);
         bCopyLog.setTypeface(Typeface.DEFAULT_BOLD);
-        bCopyLog.setMinWidth(dp(64));
-        bCopyLog.setMinHeight(dp(36));
+        bCopyLog.setMinWidth(dp(58));
+        bCopyLog.setMinHeight(dp(34));
         bCopyLog.setBackground(round(INPUT_BG, 0xFF00E5FF, 10, 1));
         bCopyLog.setOnClickListener(v -> copyLog());
-        logHead.addView(bCopyLog, new LinearLayout.LayoutParams(dp(68), LinearLayout.LayoutParams.WRAP_CONTENT));
+        LinearLayout.LayoutParams copyLp = new LinearLayout.LayoutParams(dp(62), LinearLayout.LayoutParams.WRAP_CONTENT);
+        copyLp.setMargins(dp(4), 0, 0, 0);
+        logHead.addView(bCopyLog, copyLp);
+
+        bFollowLog = new Button(this);
+        bFollowLog.setText("\u2913");
+        bFollowLog.setAllCaps(false);
+        bFollowLog.setTextSize(14);
+        bFollowLog.setTextColor(0xFFFFD54A);
+        bFollowLog.setTypeface(Typeface.DEFAULT_BOLD);
+        bFollowLog.setMinWidth(dp(40));
+        bFollowLog.setMinHeight(dp(34));
+        bFollowLog.setBackground(round(INPUT_BG, 0xFFFFD54A, 10, 1));
+        bFollowLog.setVisibility(View.GONE);
+        bFollowLog.setOnClickListener(v -> {
+            logFollow = true;
+            if (logScroll != null) logScroll.post(() -> logScroll.fullScroll(View.FOCUS_DOWN));
+            bFollowLog.setVisibility(View.GONE);
+        });
+        LinearLayout.LayoutParams followLp = new LinearLayout.LayoutParams(dp(42), LinearLayout.LayoutParams.WRAP_CONTENT);
+        followLp.setMargins(dp(4), 0, 0, 0);
+        logHead.addView(bFollowLog, followLp);
         logCard.addView(logHead);
+
+        tvRunState = new TextView(this);
+        tvRunState.setText("SIAP \u2014 belum ada proses");
+        tvRunState.setTextSize(10);
+        tvRunState.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        tvRunState.setTextColor(0xFF7CFFC4);
+        tvRunState.setPadding(0, dp(2), 0, dp(8));
+        logCard.addView(tvRunState);
 
         tvLog = new TextView(this);
         tvLog.setTextSize(12);
@@ -240,14 +288,30 @@ public class MainActivity extends Activity {
         tvLog.setPadding(dp(12), dp(10), dp(12), dp(10));
         tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
         tvLog.setText("Selamat datang di Add WAN FH.\nSambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
+        logLines = 4;
+
         ScrollView logScroll = new ScrollView(this);
         logScroll.setPadding(0, 0, 0, 0);
         logScroll.setFillViewport(true);
         logScroll.setScrollbarFadingEnabled(false);
+        logScroll.setVerticalScrollBarEnabled(true);
         logScroll.addView(tvLog);
         logScroll.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(240)));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(260)));
         this.logScroll = logScroll;
+
+        // ScrollView induk tidak boleh merebut gestur gulir di dalam log
+        logScroll.setOnTouchListener((v, e) -> {
+            int a = e.getActionMasked();
+            if (a == android.view.MotionEvent.ACTION_DOWN) {
+                v.getParent().requestDisallowInterceptTouchEvent(true);
+            } else if (a == android.view.MotionEvent.ACTION_UP || a == android.view.MotionEvent.ACTION_CANCEL) {
+                v.getParent().requestDisallowInterceptTouchEvent(false);
+            }
+            return false;
+        });
+        logScroll.getViewTreeObserver().addOnScrollChangedListener(this::updateFollowButton);
+
         logCard.addView(logScroll);
         main.addView(logCard);
 
@@ -513,29 +577,109 @@ public class MainActivity extends Activity {
         for (Button b : buttons) b.setEnabled(false);
         setStatus("\u23F3 " + label + " ...");
         log("\u25B6 " + label);
+        taskStarted(label);
         io.execute(() -> {
+            boolean ok = true;
             try {
                 w.run();
                 setStatus("\u2705 " + label + " selesai");
             } catch (Exception e) {
+                ok = false;
                 log("ERROR: " + e);
                 setStatus("\u274C " + label + " gagal: " + e);
             } finally {
+                final boolean okf = ok;
                 runOnUiThread(() -> {
                     for (Button b : buttons) b.setEnabled(true);
                     log("<< selesai");
                 });
+                taskFinished(okf);
             }
         });
     }
 
     private void log(String s) {
+        final String line = new java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
+                .format(new java.util.Date()) + "  " + s;
         runOnUiThread(() -> {
-            tvLog.append(s + "\n");
-            if (logScroll != null) {
+            if (tvLog == null) return;
+            boolean wasAtBottom = isLogAtBottom();
+            tvLog.append(line + "\n");
+            logLines++;
+            if (logLines > 700) {
+                CharSequence t = tvLog.getText();
+                int cut = t.toString().indexOf('\n', t.length() / 3);
+                if (cut > 0) {
+                    tvLog.setText(t.subSequence(cut + 1, t.length()));
+                    logLines = 500;
+                }
+            }
+            if (wasAtBottom && logScroll != null) {
                 logScroll.post(() -> logScroll.fullScroll(android.view.View.FOCUS_DOWN));
             }
+            updateFollowButton();
         });
+    }
+
+    private boolean isLogAtBottom() {
+        if (logScroll == null || tvLog == null) return true;
+        int max = tvLog.getHeight() - logScroll.getHeight();
+        return max <= 0 || logScroll.getScrollY() >= max - dp(24);
+    }
+
+    private void updateFollowButton() {
+        if (bFollowLog == null) return;
+        bFollowLog.setVisibility(isLogAtBottom() ? View.GONE : View.VISIBLE);
+    }
+
+    private void taskStarted(String label) {
+        taskStart = System.currentTimeMillis();
+        activeTasks.incrementAndGet();
+        runOnUiThread(() -> {
+            if (pbRun != null) pbRun.setVisibility(View.VISIBLE);
+            if (tvRunState != null) {
+                tvRunState.setTextColor(0xFFFFD54A);
+                tvRunState.setText("\u23F3 BERJALAN \u2014 " + label);
+            }
+            startTicker();
+            logFollow = true;
+            if (logScroll != null) logScroll.post(() -> logScroll.fullScroll(View.FOCUS_DOWN));
+        });
+    }
+
+    private void taskFinished(boolean ok) {
+        final int left = activeTasks.decrementAndGet();
+        runOnUiThread(() -> {
+            if (left > 0) return;
+            stopTicker();
+            long sec = Math.max(0, (System.currentTimeMillis() - taskStart) / 1000);
+            if (pbRun != null) pbRun.setVisibility(View.GONE);
+            if (tvRunState != null) {
+                tvRunState.setTextColor(ok ? 0xFF7CFFC4 : 0xFFFF5C5C);
+                tvRunState.setText((ok ? "\u2705 SELESAI " : "\u274C GAGAL ") + sec + " detik");
+            }
+            updateFollowButton();
+        });
+    }
+
+    private void startTicker() {
+        stopTicker();
+        ticker = new Runnable() {
+            @Override public void run() {
+                if (activeTasks.get() <= 0) return;
+                long sec = Math.max(0, (System.currentTimeMillis() - taskStart) / 1000);
+                if (tvRunState != null) tvRunState.setText("\u23F3 BERJALAN " + sec + "s");
+                uiHandler.postDelayed(this, 500);
+            }
+        };
+        uiHandler.post(ticker);
+    }
+
+    private void stopTicker() {
+        if (ticker != null) {
+            uiHandler.removeCallbacks(ticker);
+            ticker = null;
+        }
     }
 
     private void logJson(String label, String json) {
@@ -656,9 +800,9 @@ public class MainActivity extends Activity {
             byte[] bytes = readAllBytes(is);
             is.close();
             if (requestCode == REQ_CONFIG) {
-                io.execute(() -> decryptAndShowConfig(bytes));
+                runTask("BACA CONFIG", () -> decryptAndShowConfig(bytes));
             } else if (requestCode == REQ_ENCRYPT) {
-                io.execute(() -> encryptAndSaveConfig(bytes));
+                runTask("ENCRYPT CONFIG", () -> encryptAndSaveConfig(bytes));
             } else if (requestCode == REQ_SAVE_CONFIG && pendingConfigBytes != null) {
                 try (java.io.OutputStream out = getContentResolver().openOutputStream(data.getData())) {
                     if (out == null) { log("ERROR: tidak bisa tulis file"); return; }
@@ -1292,7 +1436,7 @@ public class MainActivity extends Activity {
                     new AlertDialog.Builder(this)
                             .setTitle("Hapus " + w.optString("Name", "?"))
                             .setMessage("WAN dihapus dari ONT. Koneksi internet bisa terputus.\n\nLanjutkan?")
-                            .setPositiveButton("HAPUS", (dd, ww) -> io.execute(() -> deleteWan(w)))
+                            .setPositiveButton("HAPUS", (dd, ww) -> runTask("HAPUS WAN", () -> deleteWan(w)))
                             .setNegativeButton("Batal", null).show();
                 }).show());
     }
@@ -1402,7 +1546,7 @@ public class MainActivity extends Activity {
                     final String mask = fMask.getText().toString().trim();
                     final String gw = fGw.getText().toString().trim();
                     final String dns = fDns.getText().toString().trim();
-                    io.execute(() -> applyWan(existing, name, mode, type, vlan, prio, mtu, user, pass, ip, mask, gw, dns));
+                    runTask(edit ? "SIMPAN WAN" : "TAMBAH WAN", () -> applyWan(existing, name, mode, type, vlan, prio, mtu, user, pass, ip, mask, gw, dns));
                 })
                 .setNegativeButton("Batal", null)
                 .show();
