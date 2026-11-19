@@ -2,6 +2,19 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) · binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.0] — 2026-11-19
+
+### Ditambahkan
+- **Add_WAN_FH_Mobile.apk** (Android, 451 KB) — tools di HP, tanpa PC/laptop:
+  - CEK ONT (ping / TCP 23 / TCP 80 / deteksi custom webui)
+  - UNLOCK HG6145F1/D2 via telnet + push `custom-webui.sh` dari HP (mini HTTP server di dalam aplikasi)
+  - STATUS & SET uplink (`get_uplink_info` / `set_uplink_info`, `dev.eth.1`–`dev.eth.5`)
+  - Source: `android/` — build ulang via `android/build-apk.ps1`
+
+### Verifikasi v2.0
+- SHA256: `16BD35D689AE3E5FBCA9B1A9DC64A1D274B2BCC23343B5A8D23A0AA83CFFDCDE`
+- Ukuran: 451.027 byte
+
 ## [v1.1] — 2026-11-19
 
 ### Ditambahkan

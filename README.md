@@ -9,14 +9,44 @@ Tool Windows untuk teknisi ISP / installer jaringan yang bekerja dengan modem **
 > - Dilarang menggunakan tool ini untuk mengakses perangkat yang bukan milik Anda / tanpa izin.
 > - File `.exe` **tidak ditandatangani secara digital** — Windows SmartScreen mungkin menolak. Selalu verifikasi checksum sebelum menjalankan.
 
+## 📱 Add_WAN_FH Mobile (Android) — baru di v2.0
+
+**[⬇️ Download Add_WAN_FH_Mobile.apk](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.0)** — tools yang sama dalam satu APK Android, **tanpa PC/laptop**.
+
+**Fitur:**
+- **CEK ONT** — ping, cek TCP 23 (telnet) & 80, verifikasi custom webui aktif
+- **UNLOCK** — telnet `gpon`/`Fh@MAC`, push `custom-webui.sh` dari HP via mini HTTP server internal (tanpa server eksternal)
+- **STATUS UPLINK** — `get_uplink_info` (port mana yang jadi uplink)
+- **SET UPLINK** — `set_uplink_info` (pilih port `dev.eth.1`–`dev.eth.5`)
+
+**Kebutuhan:**
+- HP Android 7+ dengan aplikasi ini terinstall (aktifkan *Install unknown apps*)
+- HP **satu jaringan/WiFi/LAN** dengan ONT (mis. konek ke WiFi ONT `192.168.1.1`)
+- ONT HG6145F1/D2 firmware RP4423 (custom webui unlock)
+- Telnet aktif di ONT: `Security > ACL Settings` (lihat repo [hg6145-uplink-htb-media-converter](https://github.com/Indra725/hg6145-uplink-htb-media-converter))
+- Backup config ONT dulu — unlock memodifikasi firmware (risiko brick)
+
+**Verifikasi (v2.0):**
+```
+SHA256: 16BD35D689AE3E5FBCA9B1A9DC64A1D274B2BCC23343B5A8D23A0AA83CFFDCDE
+Ukuran: 451.027 byte
+```
+
+**Build dari source** (Windows, JDK 17 + Android SDK + keystore Anda sendiri):
+```powershell
+cd android
+.\build-apk.ps1
+```
+
 ## Isi repo
 
 Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH (Add WAN Fiberhome) & utility konfigurasi Fiberhome. Binari didistribusikan lewat **[Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases)**, bukan di git tree. Riwayat perubahan: [`CHANGELOG.md`](CHANGELOG.md).
 
 | Versi | File | Tanggal | Rilis |
 |---|---|---|---|
-| v1.0 | `Add_WAN_FH.exe` | 2026-10-21 | [releases/v1.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.0) |
+| v2.0 | `Add_WAN_FH_Mobile.apk` (Android) | 2026-11-19 | [releases/v2.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.0) |
 | v1.1 | `FiberhomeConfigUtility.exe` | 2026-10-22 | [releases/v1.1](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.1) |
+| v1.0 | `Add_WAN_FH.exe` | 2026-10-21 | [releases/v1.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.0) |
 
 ## Verifikasi (v1.0)
 
