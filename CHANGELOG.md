@@ -2,6 +2,11 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.5] - 2026-11-19
+
+### Ditambahkan
+- **`docs/firmware-compat.md`** - peringatan keras: custom-webui.bin hanya RP4423; RP4307 TIDAK kompatibel (CLI terkunci + 0 tool publik); temuan config `X_FH_LanInterface` dari report user.
+
 ## [v2.4] - 2026-11-19
 
 ### Ditambahkan
