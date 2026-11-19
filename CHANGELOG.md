@@ -2,6 +2,11 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.4] - 2026-11-19
+
+### Ditambahkan
+- **`docs/uplink-permanen.md`** - checklist jujur "menu uplink terbuka & permanen" (step 0 firmware check, unlock Local Upgrade, TR-069 patch, persistence, set uplink, backup config, restore setelah factory reset). Jelas membedakan: bertahan reboot / hilang saat factory reset.
+
 ## [v2.3] - 2026-11-19
 
 ### Ditambahkan
