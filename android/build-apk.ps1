@@ -1,5 +1,4 @@
-# Build Add_WAN_FH_Mobile.apk (Windows)
-# Butuh: JDK 11+, Android SDK (build-tools 36+, platform android-36), Python 3, keystore di C:\Users\andik\addwan-debug.keystore
+﻿# Build Add_WAN_FH_Mobile.apk (Windows, JDK 11+ / Android SDK / Python 3 / keystore Anda sendiri)
 $ErrorActionPreference = 'Stop'
 
 $AppDir = Split-Path -Parent $MyInvocation.MyCommand.Path
@@ -7,38 +6,55 @@ $Sdk = 'C:\Users\andik\android-sdk'
 $BT  = Join-Path $Sdk 'build-tools\36.0.0'
 $Jar = Join-Path $Sdk 'platforms\android-36\android.jar'
 $Build = Join-Path $AppDir 'build'
+$Flat = Join-Path $Build 'flat'
 $Keystore = 'C:\Users\andik\addwan-debug.keystore'
 
-New-Item -ItemType Directory -Force $Build | Out-Null
+function Assert-Exit($step) { if ($LASTEXITCODE -ne 0) { throw "$step gagal (exit $LASTEXITCODE)" } }
+
+Remove-Item -Recurse -Force $Build -ErrorAction SilentlyContinue
+New-Item -ItemType Directory -Force $Flat | Out-Null
 New-Item -ItemType Directory -Force (Join-Path $Build 'classes') | Out-Null
 
-Write-Host '[1/6] aapt2 link (manifest + assets)...'
+Write-Host '[1/7] aapt2 compile (resources)...'
+& "$BT\aapt2.exe" compile --dir (Join-Path $AppDir 'app\res') -o $Flat
+Assert-Exit 'aapt2 compile'
+
+Write-Host '[2/7] aapt2 link (manifest + assets + resources)...'
+$flats = (Get-ChildItem $Flat -Recurse -Filter *.flat | ForEach-Object { $_.FullName })
 & "$BT\aapt2.exe" link -I $Jar `
   --manifest (Join-Path $AppDir 'app\AndroidManifest.xml') `
   -A (Join-Path $AppDir 'app\assets') `
+  -R $flats `
   -o (Join-Path $Build 'base.apk')
+Assert-Exit 'aapt2 link'
 
-Write-Host '[2/6] javac...'
+Write-Host '[3/7] javac...'
 & javac -source 8 -target 8 -nowarn -cp $Jar `
   -d (Join-Path $Build 'classes') `
   (Join-Path $AppDir 'app\src\com\daffiyanet\addwan\MainActivity.java')
+Assert-Exit 'javac'
 
-Write-Host '[3/6] d8 -> classes.dex...'
+Write-Host '[4/7] d8 -> classes.dex...'
 $classFiles = (Get-ChildItem (Join-Path $Build 'classes') -Recurse -Filter *.class | ForEach-Object { $_.FullName })
 & "$BT\d8.bat" --release --min-api 24 --lib $Jar `
   --output $Build `
   $classFiles
+Assert-Exit 'd8'
 
-Write-Host '[4/6] insert classes.dex -> unsigned.apk...'
-python -c "import zipfile, shutil; src=zipfile.ZipFile(r'$Build\base.apk'); dst=zipfile.ZipFile(r'$Build\unsigned.apk','w',zipfile.ZIP_DEFLATED); [dst.writestr(n, src.read(n)) for n in src.namelist()]; dst.write(r'$Build\classes.dex','classes.dex'); dst.close(); src.close()"
+Write-Host '[5/7] insert classes.dex -> unsigned.apk...'
+python -c "import zipfile; src=zipfile.ZipFile(r'$Build\base.apk'); dst=zipfile.ZipFile(r'$Build\unsigned.apk','w',zipfile.ZIP_DEFLATED); [dst.writestr(n, src.read(n)) for n in src.namelist()]; dst.write(r'$Build\classes.dex','classes.dex'); dst.close(); src.close()"
+if ($LASTEXITCODE -ne 0) { throw 'merge classes.dex gagal' }
 
-Write-Host '[5/6] zipalign...'
+Write-Host '[6/7] zipalign...'
 & "$BT\zipalign.exe" -f 4 (Join-Path $Build 'unsigned.apk') (Join-Path $Build 'aligned.apk')
+Assert-Exit 'zipalign'
 
-Write-Host '[6/6] apksigner sign...'
+Write-Host '[7/7] apksigner sign + verify...'
 & "$BT\apksigner.bat" sign --ks $Keystore --ks-pass pass:android --ks-key-alias addwan `
   --out (Join-Path $Build 'Add_WAN_FH_Mobile.apk') (Join-Path $Build 'aligned.apk')
+Assert-Exit 'apksigner sign'
+& "$BT\apksigner.bat" verify --print-certs (Join-Path $Build 'Add_WAN_FH_Mobile.apk')
+Assert-Exit 'apksigner verify'
 
-& "$BT\apksigner.bat" verify --verbose (Join-Path $Build 'Add_WAN_FH_Mobile.apk')
 Write-Host ''
-Write-Host 'SELESAI: build\Add_WAN_FH_Mobile.apk' -ForegroundColor Green
+Write-Host 'OK: build\Add_WAN_FH_Mobile.apk' -ForegroundColor Green
