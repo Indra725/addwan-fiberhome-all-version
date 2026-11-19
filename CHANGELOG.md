@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.7] - 2026-11-19
+
+### Perbaikan
+- **`resources.arsc` disimpan (stored), bukan deflate** di `Add_WAN_FH_Mobile.apk` - penyebab "Ada masalah saat mengurai paket" (konvensi APK v1 signing wajib stored). APK sekarang cocok dengan struktur APK billing yang terbukti jalan di Android HP Anda.
+- Rilis baru: **v2.1** (prerelease) + dokumen Termux diarahkan ke v2.1 (SHA256 `F4CACF...`).
+- Build script: `android/build-apk.ps1` kini mem-preserve kompresi asli tiap entry saat repackage.
+
 ## [v2.6] - 2026-11-19
 
 ### Ditambahkan

@@ -41,8 +41,22 @@ $classFiles = (Get-ChildItem (Join-Path $Build 'classes') -Recurse -Filter *.cla
   $classFiles
 Assert-Exit 'd8'
 
-Write-Host '[5/7] insert classes.dex -> unsigned.apk...'
-python -c "import zipfile; src=zipfile.ZipFile(r'$Build\base.apk'); dst=zipfile.ZipFile(r'$Build\unsigned.apk','w',zipfile.ZIP_DEFLATED); [dst.writestr(n, src.read(n)) for n in src.namelist()]; dst.write(r'$Build\classes.dex','classes.dex'); dst.close(); src.close()"
+Write-Host '[5/7] insert classes.dex -> unsigned.apk (preserve compression)...'
+$merge = @'
+import zipfile
+src = zipfile.ZipFile(r'__BASE__')
+dst = zipfile.ZipFile(r'__UNSIGNED__', 'w', zipfile.ZIP_DEFLATED)
+for item in src.infolist():
+    data = src.read(item.filename)
+    zi = zipfile.ZipInfo(item.filename, date_time=item.date_time)
+    zi.compress_type = item.compress_type
+    zi.external_attr = item.external_attr
+    dst.writestr(zi, data)
+dst.write(r'__DEX__', 'classes.dex', zipfile.ZIP_DEFLATED)
+dst.close(); src.close()
+'@
+$merge = $merge.Replace('__BASE__', "$Build\base.apk").Replace('__UNSIGNED__', "$Build\unsigned.apk").Replace('__DEX__', "$Build\classes.dex")
+python -c $merge
 if ($LASTEXITCODE -ne 0) { throw 'merge classes.dex gagal' }
 
 Write-Host '[6/7] zipalign...'
