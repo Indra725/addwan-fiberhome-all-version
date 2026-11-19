@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tutorial — Cara Aktifkan ACL & Telnet di Router Fiberhome (Semua Versi)</title>
+<style>
+:root{--bg:#0B0F1A;--card:#131B33;--card2:#1B2342;--line:#26304E;--gold:#FFD54A;--gold2:#E6A817;--cyan:#00E5FF;--green:#22C55E;--red:#FF5C5C;--text:#E8ECF8;--muted:#8E94B8}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:radial-gradient(1200px 600px at 20% -10%,#1A1740,transparent),radial-gradient(900px 500px at 90% 110%,#0f2a36,transparent),var(--bg);color:var(--text);line-height:1.7}
+.wrap{max-width:1080px;margin:0 auto;padding:40px 20px 60px}
+header{text-align:center;margin-bottom:36px}
+.badge{display:inline-flex;gap:8px;align-items:center;background:rgba(255,213,74,.12);border:1px solid rgba(255,213,74,.35);color:var(--gold);padding:6px 16px;border-radius:999px;font-size:12px;letter-spacing:2px;margin-bottom:14px}
+h1{font-size:clamp(26px,4.5vw,42px);color:var(--gold);line-height:1.25;text-shadow:0 0 40px rgba(255,213,74,.3)}
+h1 span{color:#fff}
+.sub{color:var(--muted);max-width:760px;margin:12px auto 0;font-size:15px}
+.hero{display:flex;gap:18px;justify-content:center;flex-wrap:wrap;margin-top:22px}
+.hero .pill{background:var(--card);border:1px solid var(--line);padding:8px 16px;border-radius:10px;font-size:13px}
+.pill b{color:var(--cyan)}
+h2{font-size:26px;color:var(--gold);border-left:4px solid var(--gold);padding-left:14px;margin:44px 0 16px}
+h3{font-size:18px;color:#fff;margin:22px 0 10px}
+p{margin-bottom:12px;color:#D6DBF2}
+.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:16px;padding:22px 24px;margin:18px 0}
+.note{border-left:4px solid var(--cyan)}
+.warn{border-left:4px solid var(--red)}
+.ok{border-left:4px solid var(--green)}
+.tip{background:#1A2440;border:1px dashed var(--cyan);border-radius:12px;padding:14px 18px;margin:14px 0;font-size:14px}
+code{background:#05070F;border:1px solid #1E2A4A;border-radius:6px;padding:2px 8px;font-family:Consolas,monospace;color:#7CFFC4;font-size:14px}
+pre{background:#05070F;border:1px solid #1E2A4A;border-radius:12px;padding:18px 20px;overflow:auto;font-family:Consolas,monospace;font-size:13px;color:#7CFFC4;line-height:1.9;margin:14px 0}
+pre .c{color:#6B7AAD}
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:14px}
+th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--line)}
+th{color:var(--gold);background:#141B33;letter-spacing:.5px}
+tr:hover{background:rgba(0,229,255,.04)}
+ul,ol{margin:10px 0 14px 24px}
+li{margin-bottom:6px}
+.steps{counter-reset:s}
+.step{display:flex;gap:16px;align-items:flex-start;padding:14px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.step:last-child{border-bottom:none}
+.step-num{flex:0 0 38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#B7791F);color:#1a1200;font-weight:800;display:grid;place-items:center;font-size:16px}
+.kbd{background:#1F2947;border:1px solid #3A4775;border-radius:6px;padding:2px 8px;font-family:Consolas,monospace;font-size:13px;color:#EAF0FF}
+.checklist li{list-style:none;position:relative;padding-left:28px}
+.checklist li::before{content:"✓";position:absolute;left:0;top:-2px;color:var(--green);font-weight:700;font-size:18px}
+footer{text-align:center;color:#5C6188;font-size:12px;padding-top:34px;border-top:1px solid var(--line);margin-top:40px}
+footer a{color:var(--gold)}
+.toc{display:flex;flex-wrap:wrap;gap:10px;margin:24px 0}
+.toc a{color:var(--text);text-decoration:none;background:var(--card);border:1px solid var(--line);padding:8px 14px;border-radius:8px;font-size:13px}
+.toc a:hover{border-color:var(--gold);color:var(--gold)}
+@media print{ body{background:#fff;color:#000} .card{background:#fff;border:1px solid #ddd} h1,.h2-color{color:#000} .badge{color:#000;border-color:#999} code{color:#000;background:#eee;border-color:#ccc} pre{background:#eee;color:#000} th{background:#eee;color:#000} .toc,footer{display:none} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <div class="badge">📘 TUTORIAL LENGKAP · BAHASA INDONESIA</div>
+  <h1>Cara Aktifkan <span>ACL</span> &amp; <span>Telnet</span><br>di Router Fiberhome</h1>
+  <p class="sub">Panduan langkah-demi-langkah untuk semua seri populer — HG6145F1, HG6145D2, HG6245F/L, AN5506 — dari firmware stock hingga custom webui. Langsung dari layar router Anda.</p>
+  <div class="hero">
+    <span class="pill">✅ Semua seri Fiberhome</span>
+    <span class="pill">✅ Web UI &amp; CLI</span>
+    <span class="pill">✅ <b>Tanpa</b> software tambahan</span>
+    <span class="pill">✅ Bisa dicetak / PDF</span>
+  </div>
+</header>
+
+<nav class="toc">
+  <a href="#login">1. Login ke Router</a>
+  <a href="#acl">2. Aktifkan ACL</a>
+  <a href="#telnet">3. Aktifkan Telnet</a>
+  <a href="#verifikasi">4. Verifikasi</a>
+  <a href="#firmware">5. Perbedaan per Firmware</a>
+  <a href="#custom-webui">6. Custom Webui</a>
+  <a href="#faq">7. FAQ &amp; Troubleshooting</a>
+</nav>
+
+<h2 id="login">1. Login ke Router</h2>
+
+<div class="card">
+  <ol class="steps">
+    <li class="step"><div class="step-num">1</div><div>Hubungkan HP/PC/laptop ke WiFi ONT, atau colok kabel LAN ke salah satu port LAN ONT.</div></li>
+    <li class="step"><div class="step-num">2</div><div>Buka browser (Chrome/Edge/Firefox), ketik alamat IP ONT: biasanya <code>http://192.168.1.1</code> (default) atau <code>http://192.168.100.1</code> (default sebagian operator).</div></li>
+    <li class="step"><div class="step-num">3</div><div>Masukkan kredensial admin:<br><code>username : admin</code><br><code>password : &lt;password Anda&gt;</code><br>(Untuk ONT baru bawaan ISP: password biasanya tertera di stiker belakang ONT — format <code>Fh@XXXXXX</code>, contoh <code>Fh@AB12CD</code>.)</div></li>
+    <li class="step"><div class="step-num">4</div><div>Klik <b>Login</b>. Jika salah, ada jeda 30 detik sebelum Anda bisa coba lagi (jangan tekan berulang).</div></li>
+  </ol>
+</div>
+
+<div class="tip">💡 Password bisa Anda lihat/ubah di mode advanced: <b>Administration / Management → Account</b> atau <b>Security → ACL Settings</b> untuk manajemen akses.</div>
+
+<h2 id="acl">2. Cara Aktifkan ACL (Access Control List)</h2>
+
+<p>ACL menentukan siapa (IP/subnet/port) yang boleh mengakses layanan tertentu di ONT (web UI, telnet, ping, DNS, dll). Default banyak ONT: ACL <b>nonaktif</b> atau hanya membolehkan akses LAN.</p>
+
+<div class="card">
+  <h3>Langkah (Web UI — firmware stock / custom):</h3>
+  <ol class="steps">
+    <li class="step"><div class="step-num">1</div><div>Setelah login, pilih menu <b>Security</b> atau <b>Firewall</b> (nama menu bisa berbeda per firmware — lihat tabel di bagian 5).</div></li>
+    <li class="step"><div class="step-num">2</div><div>Pilih sub-menu <b>ACL Settings</b> / <b>ACL / Access Control</b>. Anda akan melihat halaman <code>acl_setting.html</code> dengan dua radio button: <b>Enable</b> dan <b>Disable</b>.</div></li>
+    <li class="step"><div class="step-num">3</div><div>Centang <span class="kbd">Enable</span>, lalu klik <b>Apply</b> / <b>Save</b> / <b>OK</b>.</div></li>
+    <li class="step"><div class="step-num">4</div><div>(Opsional) Untuk menambah aturan baru, klik <b>Add</b>:<br>
+      - <b>Start IP – End IP</b>: rentang yang diizinkan (mis. <code>192.168.1.0 – 192.168.1.254</code>)<br>
+      - <b>Protocol</b>: <code>ALL</code> untuk semua layanan, atau spesifik (HTTP/Telnet/SSH/ICMP/dll)<br>
+      - <b>Direction</b>: <code>LAN</code> (dari sisi lokal) atau <code>WAN</code> (dari internet)<br>
+      - <b>Enable / Active</b>: <b>Yes</b><br>
+      Klik <b>Apply</b>.</div></li>
+    <li class="step"><div class="step-num">5</div><div>Aturan aktif langsung tersimpan (<code>X_FH_ACL Rule ... Enable = 1</code>). Tidak perlu reboot.</div></li>
+  </ol>
+</div>
+
+<div class="card note">
+  <h3>📌 Format alamat yang dipakai:</h3>
+  <table>
+    <tr><th>Jenis</th><th>Contoh</th><th>Arti</th></tr>
+    <tr><td>Host IP</td><td><code>192.168.1.50</code></td><td>Hanya PC/HP dengan IP ini yang boleh akses</td></tr>
+    <tr><td>Range IP</td><td><code>192.168.1.0 – 192.168.1.254</code></td><td>Semua host di subnet Anda</td></tr>
+    <tr><td>Kosong (all)</td><td><code>UCI_NULL</code> / kosong</td><td>Semua IP (biasanya hanya valid untuk LAN intern.)</td></tr>
+    <tr><td>Port</td><td><code>23</code> (telnet), <code>80</code> (HTTP), <code>443</code>, <code>8291</code> (TR-069)</td><td>Port spesifik yang diizinkan</td></tr>
+  </table>
+</div>
+
+<div class="card warn">
+  <strong>⚠️ Catatan penting:</strong> Jika ONT Anda diprovisioning oleh ISP (ada aturan TR-069 dari ACS), aturan ACL bisa <em>diabaikan/dikunci</em> oleh provisioning server — disimpan di config tapi tidak diterapkan. Perubahan yang "benar-benar permanen" baru bisa setelah ONT di-<em>unprovisioned</em> atau setting lokal diizinkan.
+</div>
+
+<h2 id="telnet">3. Cara Aktifkan Telnet</h2>
+
+<p>Telnet pada Fiberhome sangat berguna untuk troubleshooting (CLI seperti <code>display</code>, <code>show</code>, <code>ping</code> dari dalam ONT). Aktifkan sebagai berikut.</p>
+
+<div class="card">
+  <h3>Metode A — Web UI (paling mudah):</h3>
+  <ol class="steps">
+    <li class="step"><div class="step-num">1</div><div>Menu <b>Security → ACL Settings</b> (sama seperti Langkah 2 di atas)</div></li>
+    <li class="step"><div class="step-num">2</div><div>Cari daftar aturan ACL yang ada. Cari yang <b>Protocol = Telnet</b> atau <b>ALL</b> dengan <b>Direction = LAN</b>.</div></li>
+    <li class="step"><div class="step-num">3</div><div>Jika tidak ada, klik <b>Add</b> → isi: <b>Protocol = Telnet</b> (atau <b>ALL</b>), <b>Direction = LAN</b>, <b>Source IP = 192.168.1.0 – 192.168.1.254</b>, <b>Enable = Yes</b>.</div></li>
+    <li class="step"><div class="step-num">4</div><div>Pastikan ACL global <b>Enable = Yes</b> (paling atas halaman). Klik <b>Apply</b>.</div></li>
+    <li class="step"><div class="step-num">5</div><div>(Jika opsi khusus Telnet terpisah) masuk menu <b>Administration / Management → Access Control</b>, aktifkan <b>Telnet Access = Enable</b>.</div></li>
+  </ol>
+</div>
+
+<div class="card">
+  <h3>Metode B — Lewat CLI Telnet (setelah menyala):</h3>
+  <pre>telnet 192.168.1.1
+<span class="c"># Login: gpon</span>
+Username : <span class="c">gpon</span>
+Password : <span class="c">Fh@XXXXXX</span>        <span class="c"># 6 hex terakhir dari MAC, UPPERCASE</span>
+<span class="c"># Masuk ke CLI, lalu:</span>
+User&gt; enable
+Password : <span class="c">Fh@XXXXXX</span>
+Config#</pre>
+  <p>Jika port 23 sudah terbuka tapi CLI menolak perintah khusus ("Unknown command"), firmware Anda terkunci — gunakan <b>Local Upgrade custom webui</b> (lihat bagian 6) atau menu <b>ACL Settings</b> di atas.</p>
+</div>
+
+<div class="card note">
+  <h3>🔐 Kredensial standar Fiberhome untuk semua seri:</h3>
+  <table>
+    <tr><th>Seri</th><th>Username</th><th>Password (default pabrik)</th><th>CLI Telnet</th></tr>
+    <tr><td>HG6145F1 / HG6145F / HG6145D2</td><td><code>admin</code></td><td><code>Admin@[4hex terakhir]</code> atau <code>Fh@XXXXXX</code></td><td><code>gpon</code> / <code>Fh@XXXXXX</code></td></tr>
+    <tr><td>AN5506-01-A / -04-F</td><td><code>admin</code></td><td><code>zna_snd!@#123</code> (generik lama) / stiker</td><td><code>gpon</code> / <code>Fh@XXXXXX</code></td></tr>
+    <tr><td>HG6245F / HG6245L</td><td><code>admin</code></td><td><code>jxr #CR</code> atau dari stiker</td><td><code>gpon</code> / <code>Fh@XXXXXX</code></td></tr>
+    <tr><td>Fiberhome GPON ONT lainnya</td><td><code>admin</code></td><td>Stiker di label bawah (lihat <code>DEFAULT PASSWORD</code>)</td><td><code>gpon</code> / <code>Fh@XXXXXX</code></td></tr>
+  </table>
+</div>
+
+<h2 id="verifikasi">4. Verifikasi Bahwa ACL/Telnet Bekerja</h2>
+
+<div class="card ok">
+  <ul class="checklist">
+    <li>Ping ke ONT dari PC Anda <code>ping 192.168.1.1</code> → dapat balasan</li>
+    <li>Telnet <code>telnet 192.168.1.1</code> → muncul prompt login</li>
+    <li>Web UI lain bisa diakses hanya dari IP yang diizinkan (coba dari HP lain di WiFi yang sama — jika di-block, itu sukses)</li>
+    <li>Di dalam CLI: ketik <code>display version</code>, <code>system</code>, <code>?</code> → muncul daftar perintah</li>
+  </ul>
+</div>
+
+<h2 id="firmware">5. Perbedaan Menu per Firmware / Seri</h2>
+
+<table>
+  <tr><th>Seri / Keterangan</th><th>Menu ACL</th><th>Menu Telnet</th><th>Catatan</th></tr>
+  <tr><td>HG6145F1 / HG6145D2 (RP4423)</td><td><b>Security → ACL Settings</b> <code>acl_setting.html</code></td><td>Security → ACL Settings (sama)</td><td>Custom webui membuka semua endpoint AJAX</td></tr>
+  <tr><td>HG6145F / HG6145D (RP4307)</td><td>Security → ACL Settings</td><td>Security → ACL Settings</td><td>CLI telnet terkunci; hanya web UI yang bisa</td></tr>
+  <tr><td>AN5506 series</td><td>Security → ACL Settings<br><em>atau</em> Firewall → ACL</td><td>Security → ACL Settings</td><td>Beberapa firmware memakai istilah "IP Filter"</td></tr>
+  <tr><td>HG6245F / HG6245L</td><td>Network → Security → ACL</td><td>Network → Security → ACL</td><td>Aktivasi via radio / checkbox</td></tr>
+  <tr><td>Fiberhome GPON (operator PLDT/Telkom)</td><td><b>Service → Security → ACL</b></td><td>Service → ACL</td><td>Beberapa di-lock TR-069</td></tr>
+</table>
+
+<div class="tip">Jika menu tidak ditemukan, cari kata kunci <code>acl</code> di halaman "Help" atau di search box ONT. Kalau tidak ada sama sekali, firmware Anda mungkin custom-locked — gunakan <b>Add WAN FH</b> atau pin firmware lain.</div>
+
+<h2 id="custom-webui">6. Mode Custom Webui (Unlock CLI Terkunci)</h2>
+<div class="card">
+  <ol class="steps">
+    <li class="step"><div class="step-num">1</div><div>Download <code>custom-webui.bin</code> (proyek open-source Fiberhome HG6145F1 Custom Webui — <code>github.com/numberonedz/hg6145f1-custom-webui</code>).</div></li>
+    <li class="step"><div class="step-num">2</div><div>Login ke web UI ONT → <b>Management → Device Management → Local Upgrade</b></div></li>
+    <li class="step"><div class="step-num">3</div><div>Pilih <code>custom-webui.bin</code> → <b>Update File</b> → akan muncul <b>"Upgrade failed"</b> (itu memang tujuannya — patch berbasis OMCI) → <b>refresh</b> browser</div></li>
+    <li class="step"><div class="step-num">4</div><div>Setelah refresh, web UI berubah (ada badge "Custom WebUI by Adel" di login) → semua menu &amp; kemungkinan perintah CLI terbuka</div></li>
+    <li class="step"><div class="step-num">5</div><div>Untuk mengaktifkan telnet setelah custom webui: menu <b>Security → ACL Settings</b> (sekarang fungsional), atau lewat telnet CLI: <code>config</code>, <code>shell</code>, dsb.</div></li>
+  </ol>
+</div>
+
+<h2 id="faq">7. FAQ &amp; Troubleshooting</h2>
+<div class="card">
+  <h3>T: Port 23 (telnet) tertutup walau sudah Enable?</h3>
+  <p>J: Beberapa ONT butuh aturan <b>ACL khusus untuk telnet</b> (bukan hanya mengaktifkan ACL global). Tambah aturan: Protocol=Telnet, LAN, IP=192.168.1.0–254, Enable=Yes.</p>
+
+  <h3>T: Login web UI gagal dengan "3 times Error. 30 minutes locked"?</h3>
+  <p>J: Salah password 3 kali berturut-turut mengunci web UI. Tunggu sampai countdown habis, atau <b>factory reset</b> ONT (pin hole 10 detik) — reset menghapus semua konfigurasi, jangan dilakukan kecuali benar-benar perlu.</p>
+
+  <h3>T: ONT tidak bisa dikonfigurasi sama sekali setelah restart?</h3>
+  <p>J: Itu tanda ONT Anda di-manage via TR-069 oleh operator. Hubungi ISP Anda; setting akan di-push kembali saat ACS polling (biasanya tiap 5–15 menit).</p>
+
+  <h3>T: Saya butuh tampilan lebih profesional untuk Tutorial ini?</h3>
+  <p>J: Anda bisa print tutorial ini ke PDF lewat browser: <b>Ctrl+P → Save as PDF</b>. Tampilan akan otomatis rapi (print mode sudah disiapkan).</p>
+
+  <h3>T: Apakah aman membuka ACL &amp; Telnet?</h3>
+  <p>J: Aman selama hanya di jaringan internal Anda. Jangan pernah expose ke internet (WAN) tanpa VPN — itu membuka jalan bagi orang asing masuk ke jaringan rumah Anda.</p>
+</div>
+
+<h2>Appendix — Contoh Perintah CLI</h2>
+<div class="card">
+<pre><span class="c"># Masuk telnet</span>
+telnet 192.168.1.1
+Login: gpon
+Password: Fh@AB12CD
+
+<span class="c"># Masuk privilege level tinggi</span>
+User&gt; enable
+Password: Fh@AB12CD
+Config#
+
+<span class="c"># Contoh perintah diagnostik</span>
+display version
+system show
+show run
+ping 8.8.8.8
+
+<span class="c"># Baca konfigurasi running</span>
+display current-configuration</pre>
+</div>
+
+<footer>
+  Add WAN FH · Daffiyanet · Tutorial diperbarui Nov 2026<br>
+  <a href="https://indra725.github.io/donasi/">Dukung proyek ini ☕</a> · <a href="mailto:08516163719">08516163719</a> (a.n. Daffiyanet · QRIS tersedia)<br>
+  File ini bebas dibaca/diredistribusikan untuk keperluan edukasi teknis · Bukan produk resmi Fiberhome
+</footer>
+
+</div>
+</body>
+</html>
