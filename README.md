@@ -28,7 +28,7 @@ Tool Windows untuk teknisi ISP / installer jaringan yang bekerja dengan modem **
 
 **Verifikasi (v2.0):**
 ```
-SHA256: 7EF8208109C02C3B18BDFD1655FACDFCC42635DD4A3E3EB8CA82C4EE8C2ACE43
+SHA256: C68CC55F7816DFA5A5E8465201B23B4E77829606B9852E2E59450647B950D0CB
 Ukuran: 455.529 byte
 ```
 
@@ -119,4 +119,5 @@ Kalau repo ini bermanfaat buat pekerjaan Anda, boleh dukung pengembangan & maint
 ## Lapor masalah
 
 Buka tab **Issues** di repo ini. Sertakan: versi tool, versi firmware ONU, dan langkah reproduksi.
+
 

@@ -22,7 +22,6 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
-import java.nio.charset.StandardCharsets;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
@@ -30,7 +29,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Add WAN FH Mobile — unlock Fiberhome HG6145F1/D2 (RP4423) & set uplink via HP.
+ * Add WAN FH Mobile -------- unlock Fiberhome HG6145F1/D2 (RP4423) & set uplink via HP.
  * Tool ini BUKAN produk resmi Fiberhome; gunakan hanya pada perangkat milik Anda.
  */
 public class MainActivity extends Activity {
@@ -71,7 +70,7 @@ public class MainActivity extends Activity {
         main.setBackgroundColor(0xFF050718);
 
         TextView title = new TextView(this);
-        title.setText("⚡ ADD WAN FH");
+        title.setText("------ ADD WAN FH");
         title.setTextSize(26);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         title.setTextColor(0xFFFFD700);
@@ -239,7 +238,7 @@ public class MainActivity extends Activity {
         if (logo.startsWith("200") && logo.length() > 1000) {
             log("custom webui: AKTIF");
         } else {
-            log("custom webui: belum terdeteksi — perlu UNLOCK dulu");
+            log("custom webui: belum terdeteksi -------- perlu UNLOCK dulu");
         }
         log("IP HP saya  : " + phoneIp());
     }
@@ -247,12 +246,12 @@ public class MainActivity extends Activity {
     private void doUnlock() {
         String ip = ontIp();
         String mac = etMac.getText().toString().trim();
-        if (mac.replaceAll("[^0-9a-fA-F]", "").length() < 6) { log("MAC kosong/tidak valid — isi dulu"); return; }
+        if (mac.replaceAll("[^0-9a-fA-F]", "").length() < 6) { log("MAC kosong/tidak valid -------- isi dulu"); return; }
         log("=== UNLOCK " + ip + " ===");
         String pass = macPassword(mac);
         log("password    : " + pass);
         String localIp = phoneIp();
-        if (localIp == null) { log("ERROR: IP HP tidak terdeteksi — sambungkan ke WiFi ONT"); return; }
+        if (localIp == null) { log("ERROR: IP HP tidak terdeteksi -------- sambungkan ke WiFi ONT"); return; }
         log("IP HP       : " + localIp);
 
         FileServer server = new FileServer(localIp);
@@ -287,7 +286,7 @@ public class MainActivity extends Activity {
             Thread.sleep(1500);
             server.stop();
             doCheckOnt();
-            log("=== UNLOCK SELESAI — buka http://" + ip + " di browser HP ===");
+            log("=== UNLOCK SELESAI -------- buka http://" + ip + " di browser HP ===");
         } catch (Exception e) {
             server.stop();
             log("UNLOCK GAGAL: " + e);
@@ -304,7 +303,7 @@ public class MainActivity extends Activity {
         if (resp.startsWith("200")) {
             log("\nuplink_type = dev.eth.N berarti port LAN itu jadi uplink.");
         } else {
-            log("Gagal baca — coba unlock dulu, atau cek via F12 Console:");
+            log("Gagal baca -------- coba unlock dulu, atau cek via F12 Console:");
             log("XHR.get(\"get_uplink_info\", null, function(d){console.log(JSON.stringify(d))})");
         }
     }
@@ -313,7 +312,7 @@ public class MainActivity extends Activity {
         String ip = ontIp();
         String port = String.valueOf(spPort.getSelectedItem());
         String body = "ajaxmethod=set_uplink_info&_=" + (System.currentTimeMillis() % 1000000000)
-                + "&uplink_type=" + URLEncoder.encode(port, StandardCharsets.UTF_8);
+                + "&uplink_type=" + URLEncoder.encode(port);
         log("=== SET UPLINK " + ip + " -> " + port + " ===");
         String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
         log(resp);
@@ -334,7 +333,7 @@ public class MainActivity extends Activity {
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
             }
             if (body != null) {
-                byte[] b = body.getBytes(StandardCharsets.UTF_8);
+                byte[] b = body.getBytes("UTF-8");
                 try (OutputStream os = conn.getOutputStream()) { os.write(b); }
             }
             int code = conn.getResponseCode();
@@ -343,7 +342,7 @@ public class MainActivity extends Activity {
             int n = 0;
             int r;
             while (n < buf.length && (r = is.read(buf, n, buf.length - n)) != -1) n += r;
-            String text = new String(buf, 0, n, StandardCharsets.UTF_8);
+            String text = new String(buf, 0, n, "UTF-8");
             return code + "\n" + (text.length() > 3000 ? text.substring(0, 3000) + "\n...(truncated)" : text);
         } catch (Exception e) {
             return "0\n" + e;
@@ -365,7 +364,7 @@ public class MainActivity extends Activity {
             out = s.getOutputStream();
         }
 
-        void send(String text) throws IOException { out.write(text.getBytes(StandardCharsets.US_ASCII)); out.flush(); }
+        void send(String text) throws IOException { out.write(text.getBytes("US-ASCII")); out.flush(); }
 
         private String stripIac(byte[] d) {
             StringBuilder sb = new StringBuilder();
@@ -394,7 +393,7 @@ public class MainActivity extends Activity {
             long deadline = System.currentTimeMillis() + timeoutMs;
             while (System.currentTimeMillis() < deadline) {
                 pump(300);
-                String acc = new String(buf, 0, buf.length, StandardCharsets.UTF_8);
+                String acc = new String(buf, 0, buf.length, "UTF-8");
                 int idx = acc.indexOf(marker);
                 if (idx >= 0) {
                     int end = idx + marker.length();
@@ -405,7 +404,7 @@ public class MainActivity extends Activity {
                     return found;
                 }
             }
-            String acc = new String(buf, 0, buf.length, StandardCharsets.UTF_8);
+            String acc = new String(buf, 0, buf.length, "UTF-8");
             buf = new byte[0];
             return acc;
         }
@@ -413,7 +412,7 @@ public class MainActivity extends Activity {
         String readAll(int timeoutMs) throws IOException {
             long deadline = System.currentTimeMillis() + timeoutMs;
             while (System.currentTimeMillis() < deadline) pump(400);
-            String acc = new String(buf, 0, buf.length, StandardCharsets.UTF_8);
+            String acc = new String(buf, 0, buf.length, "UTF-8");
             buf = new byte[0];
             return acc;
         }
@@ -466,7 +465,7 @@ public class MainActivity extends Activity {
             try (InputStream cis = c.getInputStream(); OutputStream cos = c.getOutputStream()) {
                 byte[] head = new byte[8192];
                 int n = cis.read(head);
-                String req = new String(head, 0, Math.max(0, n), StandardCharsets.ISO_8859_1);
+                String req = new String(head, 0, Math.max(0, n), "ISO-8859-1");
                 if (!req.contains("custom-webui.sh")) {
                     cos.write("HTTP/1.1 404 Not Found\r\nContent-Length: 0\r\n\r\n".getBytes());
                     return;
@@ -477,7 +476,7 @@ public class MainActivity extends Activity {
                 }
                 String header = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: "
                         + script.length + "\r\nConnection: close\r\n\r\n";
-                cos.write(header.getBytes(StandardCharsets.US_ASCII));
+                cos.write(header.getBytes("US-ASCII"));
                 cos.write(script);
                 cos.flush();
             } catch (IOException ignored) {
@@ -495,3 +494,4 @@ public class MainActivity extends Activity {
         return bos.toByteArray();
     }
 }
+

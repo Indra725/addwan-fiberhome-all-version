@@ -12,7 +12,7 @@ Format: [Keep a Changelog](https://keepachangelog.com/id/) Â· binari dirilis v
   - Source: `android/` â€” build ulang via `android/build-apk.ps1`
 
 ### Verifikasi v2.0
-- SHA256: `7EF8208109C02C3B18BDFD1655FACDFCC42635DD4A3E3EB8CA82C4EE8C2ACE43`
+- SHA256: `C68CC55F7816DFA5A5E8465201B23B4E77829606B9852E2E59450647B950D0CB`
 - Ukuran: 455.529 byte
 
 ## [v1.1] â€” 2026-11-19
@@ -39,4 +39,5 @@ Format: [Keep a Changelog](https://keepachangelog.com/id/) Â· binari dirilis v
 - MD5: `B581DADADA3E1A2D43D05D8FB5422527`
 - Ukuran: 12.528.392 byte
 - Unsigned Â· Windows Defender: tidak ada ancaman (diperiksa 2026-11-19)
+
 
