@@ -59,10 +59,8 @@ public class MainActivity extends Activity {
                     log("auto-login gagal");
                     return;
                 }
-                log("refresh: uplink_info:");
-                log(ontCgi("get_uplink_info", null));
-                log("refresh: acl_info:");
-                log(ontCgi("get_acl_info", null));
+                logJson("uplink_info", ontCgi("get_uplink_info", null));
+                logJson("acl_info", ontCgi("get_acl_info", null));
             } catch (Exception e) {
                 log("auto-refresh error: " + e);
             }
@@ -315,15 +313,15 @@ public class MainActivity extends Activity {
         // ===== CARD: LOG =====
         c = card();
         TextView logHeader = new TextView(this);
-        logHeader.setText("â— â— â—   output");
-        logHeader.setTextSize(10);
+        logHeader.setText("* * *   output");
+        logHeader.setTextSize(11);
         logHeader.setTypeface(Typeface.MONOSPACE);
         logHeader.setTextColor(0xFFFF5C5C);
         logHeader.setPadding(0, 0, 0, dp(8));
         c.addView(logHeader);
 
         tvLog = new TextView(this);
-        tvLog.setTextSize(10);
+        tvLog.setTextSize(12);
         tvLog.setTypeface(Typeface.MONOSPACE);
         tvLog.setTextColor(MINT);
         tvLog.setBackgroundColor(0xFF05070F);
@@ -332,9 +330,11 @@ public class MainActivity extends Activity {
         tvLog.setText("Selamat datang di Add WAN FH.\nSambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
         ScrollView logScroll = new ScrollView(this);
         logScroll.setPadding(0, 0, 0, 0);
+        logScroll.setFillViewport(true);
+        logScroll.setScrollbarFadingEnabled(false);
         logScroll.addView(tvLog);
         logScroll.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(150)));
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(260)));
         this.logScroll = logScroll;
         c.addView(logScroll);
         main.addView(c);
@@ -434,6 +434,20 @@ public class MainActivity extends Activity {
                 logScroll.post(() -> logScroll.fullScroll(android.view.View.FOCUS_DOWN));
             }
         });
+    }
+
+    private void logJson(String label, String json) {
+        log(label + ":");
+        try {
+            String pretty = json.trim()
+                    .replace("\",", "\",\n  ")
+                    .replace("\"}", "\"\n}")
+                    .replace("{", "{\n  ")
+                    .replace("}", "\n}");
+            log(pretty);
+        } catch (Exception e) {
+            log(json);
+        }
     }
 
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOGIKA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
@@ -916,8 +930,8 @@ public class MainActivity extends Activity {
             log("Membaca data dari ONT (login web UI)...");
             String sid = ontLogin();
             if (sid != null) {
-                log("uplink_info: " + ontCgi("get_uplink_info", null));
-                log("acl_info   : " + ontCgi("get_acl_info", null));
+                logJson("uplink_info", ontCgi("get_uplink_info", null));
+                logJson("acl_info", ontCgi("get_acl_info", null));
             }
         } else {
             log("isi password di kartu Akun ONT untuk baca uplink/ACL langsung");
@@ -981,12 +995,9 @@ public class MainActivity extends Activity {
         log("=== STATUS / UPLINK " + ip + " ===");
         String sid = ontLogin();
         if (sid == null) { log("login gagal - cek password di kartu Akun ONT"); return; }
-        log("uplink_info:");
-        log(ontCgi("get_uplink_info", null));
-        log("acl_info:");
-        log(ontCgi("get_acl_info", null));
-        log("refresh_sessionid:");
-        log(ontCgi("get_refresh_sessionid", null));
+        logJson("uplink_info", ontCgi("get_uplink_info", null));
+        logJson("acl_info", ontCgi("get_acl_info", null));
+        logJson("refresh_sessionid", ontCgi("get_refresh_sessionid", null));
     }
 
     private String doSetUplink() {
@@ -1010,13 +1021,13 @@ public class MainActivity extends Activity {
         String sid = ontLogin();
         if (sid == null) return;
         String before = ontCgi("get_acl_info", null);
-        log("acl sebelum: " + before);
+        logJson("acl sebelum", before);
         boolean enabled = before.contains("\"Enable\":\"1\"");
         String target = enabled ? "0" : "1";
         String resp = ontCgi("set_acl_info", "action=enable&Enable=" + target);
-        log("set_acl_info(Enable=" + target + "): " + resp);
+        logJson("set_acl_info", resp);
         String after = ontCgi("get_acl_info", null);
-        log("acl sesudah: " + after);
+        logJson("acl sesudah", after);
         log(enabled ? "ACL sekarang NONAKTIF" : "ACL sekarang AKTIF");
     }
 

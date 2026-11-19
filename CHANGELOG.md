@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.18] - 2026-11-19
+
+### Diperbaiki
+- **UI log output diperbesar & auto-scroll**: kotak log 260dp, teks 12sp, JSON ONT dirapikan per-baris, separator mudah dibaca.
+- **Release v2.13** menjadi rilis stabil utama. Semua rilis lama (v2.0-v2.12) dihapus - repositori bersih, hanya 1 APK terbaru.
+
 ## [v2.17] - 2026-11-19
 
 ### Diubah
