@@ -6,10 +6,10 @@ Aplikasi Android all-in-one untuk teknisi ISP / installer jaringan yang mengelol
 
 ## Download (APK)
 
-**Rilis terbaru: v2.13**
-https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.13
+**Rilis terbaru: v2.14**
+https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.14
 
-`Add_WAN_FH_Mobile.apk` - SHA256: `41D2F774D0EDDC6065B88C939C7797CDC64B4B32AFAE6D5F8038079F0CC8756D` (1.107.385 byte)
+`Add_WAN_FH_Mobile.apk` - SHA256: `FD2DFCCBAE15F163D14A6DE79DA07A41F825ED7B2C49CD71A5B34BB684564AAD` (1.107.332 byte)
 
 ## Fitur
 
@@ -71,4 +71,5 @@ Tool adalah milik pembuat/distributor aslinya. Distribusi di repo ini atas izin 
 ## Lapor masalah
 
 Buka tab **Issues**. Sertakan: versi tool, firmware ONT, langkah reproduksi.
+
 

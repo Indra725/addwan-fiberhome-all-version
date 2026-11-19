@@ -2,6 +2,14 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.19] - 2026-11-19
+
+### Diperbaiki
+- **Macet & tidak ada output** - executor berubah dari single-thread ke cached (tombol tidak lagi terblokir di belakang auto-login).
+- **Ping dihapus** - pakai TCP connect ke ONT (port 80/23) - tidak pernah hang.
+- **Timeout HTTP dipercepat** (1.5s connect / 4s read), tombol memberi feedback langsung.
+- Rilis **v2.14** (stabil). Semua rilis lama dihapus.
+
 ## [v2.18] - 2026-11-19
 
 ### Diperbaiki

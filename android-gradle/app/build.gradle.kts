@@ -10,8 +10,8 @@ android {
         applicationId = "com.daffiyanet.addwan"
         minSdk = 16
         targetSdk = 36
-        versionCode = 14
-        versionName = "2.13"
+        versionCode = 15
+        versionName = "2.14"
     }
 
     buildTypes {
@@ -31,6 +31,7 @@ android {
 
 dependencies {
 }
+
 
 
 

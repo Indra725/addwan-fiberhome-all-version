@@ -29,7 +29,7 @@ public class MainActivity extends Activity {
     private TextView tvLog;
     private android.widget.ScrollView logScroll;
     private android.widget.Spinner spPort;
-    private final java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newSingleThreadExecutor();
+    private final java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newCachedThreadPool();
 
     private static final int BG = 0xFF070B1A;
     private static final int CARD = 0xFF111831;
@@ -421,9 +421,10 @@ public class MainActivity extends Activity {
     private void runTask(Work w, final Button... buttons) {
         for (Button b : buttons) b.setEnabled(false);
         io.execute(() -> {
+            log("...melakukan request...");
             try { w.run(); }
             catch (Exception e) { log("ERROR: " + e); }
-            finally { runOnUiThread(() -> { for (Button b : buttons) b.setEnabled(true); }); }
+            finally { runOnUiThread(() -> { for (Button b : buttons) b.setEnabled(true); log("<< selesai"); }); }
         });
     }
 
@@ -910,11 +911,18 @@ public class MainActivity extends Activity {
     private void doCheckOnt() {
         String ip = ontIp();
         log("=== CEK ONT " + ip + " ===");
-        try {
-            Process p = Runtime.getRuntime().exec(new String[]{"ping", "-c1", "-W1", ip});
-            boolean ok = p.waitFor(4, java.util.concurrent.TimeUnit.SECONDS) && p.exitValue() == 0;
-            log("ping        : " + (ok ? "OK" : "GAGAL"));
-        } catch (Exception e) { log("ping        : " + e); }
+        boolean reachable = false;
+        for (int[] pr : new int[][]{{80, 0}, {23, 0}}) {
+            try (java.net.Socket s = new java.net.Socket()) {
+                s.connect(new java.net.InetSocketAddress(ip, pr[0]), 1500);
+                log("TCP " + pr[0] + "       : TERBUKA");
+                reachable = true;
+            } catch (Exception e) { log("TCP " + pr[0] + "       : tutup"); }
+        }
+        if (!reachable) {
+            log("ONT tidak terjangkau - cek HP satu jaringan dengan ONT (192.168.1.x)");
+            return;
+        }
         for (int[] pr : new int[][]{{23, 0}, {80, 0}}) {
             try (java.net.Socket s = new java.net.Socket()) {
                 s.connect(new java.net.InetSocketAddress(ip, pr[0]), 2000);
@@ -1037,8 +1045,8 @@ public class MainActivity extends Activity {
             java.net.URL u = new java.net.URL(url);
             conn = (java.net.HttpURLConnection) u.openConnection();
             conn.setRequestMethod(method);
-            conn.setConnectTimeout(4000);
-            conn.setReadTimeout(8000);
+            conn.setConnectTimeout(1500);
+            conn.setReadTimeout(4000);
             conn.setInstanceFollowRedirects(false);
             if (body != null) {
                 conn.setDoOutput(true);
