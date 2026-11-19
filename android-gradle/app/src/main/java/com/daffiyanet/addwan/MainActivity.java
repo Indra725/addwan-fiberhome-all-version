@@ -46,6 +46,27 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(buildUi());
         loadSavedOntCredentials();
+        autoRefreshOnt();
+    }
+
+    private void autoRefreshOnt() {
+        if (etPass == null || etPass.getText().length() == 0) return;
+        io.execute(() -> {
+            try {
+                log("auto-login ke ONT...");
+                String sid = ontLogin();
+                if (sid == null) {
+                    log("auto-login gagal");
+                    return;
+                }
+                log("refresh: uplink_info:");
+                log(ontCgi("get_uplink_info", null));
+                log("refresh: acl_info:");
+                log(ontCgi("get_acl_info", null));
+            } catch (Exception e) {
+                log("auto-refresh error: " + e);
+            }
+        });
     }
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
@@ -616,6 +637,10 @@ public class MainActivity extends Activity {
     }
 
     private String untarUsrconfig(byte[] data) {
+        return untarMember(data, "usrconfig_conf");
+    }
+
+    private String untarMember(byte[] data, String wanted) {
         long offset = 0;
         while (offset + 512 <= data.length) {
             StringBuilder name = new StringBuilder();
@@ -626,7 +651,8 @@ public class MainActivity extends Activity {
                 char c = (char) (data[(int) offset + i] & 0xFF);
                 if (c >= '0' && c <= '7') size = size * 8 + (c - '0');
             }
-            if (name.toString().equals("usrconfig_conf") || name.toString().endsWith("/usrconfig_conf")) {
+            String n = name.toString();
+            if (n.equals(wanted) || n.endsWith("/" + wanted)) {
                 return new String(data, (int) offset + 512, size, java.nio.charset.StandardCharsets.UTF_8);
             }
             long blocks = (size + 511) / 512;
@@ -702,6 +728,13 @@ public class MainActivity extends Activity {
             text = untarUsrconfig(d);
             if (text == null) { log("usrconfig_conf tidak ditemukan dalam archive"); return; }
             log("isi: usrconfig_conf (" + text.split("\n").length + " baris)");
+            StringBuilder tarOut = new StringBuilder();
+            String voice = untarMember(d, "voice_digitmap_conf");
+            if (voice != null) {
+                tarOut.append("=== voice_digitmap_conf ===\n").append(voice).append("\n");
+            }
+            if (tarOut.length() > 0) log(tarOut.toString());
+            printSecretsSummary(text);
         } else {
             try {
                 text = new String(d, "UTF-8");
@@ -717,6 +750,38 @@ public class MainActivity extends Activity {
         }
         log("=== SELESAI ===");
     }
+
+    private void printSecretsSummary(String text) {
+        java.util.HashMap<String, String> m = new java.util.HashMap<>();
+        for (String line : text.split("\n")) {
+            java.util.regex.Matcher mm = java.util.regex.Pattern
+                    .compile("option\\s+(\\S+)\\s+'([^']*)'").matcher(line);
+            if (mm.find()) {
+                String v = mm.group(2);
+                if (v.matches("[0-9A-Fa-f]{32}")) {
+                    String dec = aesDecryptHex(v);
+                    if (dec != null) m.put(mm.group(1), dec);
+                }
+            }
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("\n=== RINGKASAN PASSWORD ===\n");
+        String[][] groups = {
+                {"PreSharedKey", "WiFi 2.4G Password"},
+                {"KeyPassphrase", "WiFi Key"},
+                {"Username", "ACS Username"},
+                {"Password", "ACS Password"},
+                {"ConnectionRequestUsername", "ACS ConnRequest User"},
+                {"ConnectionRequestPassword", "ACS ConnRequest Pass"}
+        };
+        for (String[] g : groups) {
+            String v = m.get(g[0]);
+            if (v != null) sb.append(g[1]).append(": ").append(v).append("\n");
+        }
+        String out = sb.toString().trim();
+        if (!out.isEmpty()) log(out);
+    }
+
 
     private void pickEncryptFile() {
         Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
