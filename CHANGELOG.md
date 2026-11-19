@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.6] - 2026-11-19
+
+### Ditambahkan
+- **`termux/INSTALL-APK-TERMUX.md`** - panduan download & install `Add_WAN_FH_Mobile.apk` langsung dari Termux (curl/wget + verifikasi SHA256 + `termux-open` ke PackageInstaller). Mengatasi error "Ada masalah saat mengurai paket" dari file manager pihak ketiga.
+- Link dari README ke dokumen baru.
+
 ## [v2.5] - 2026-11-19
 
 ### Ditambahkan

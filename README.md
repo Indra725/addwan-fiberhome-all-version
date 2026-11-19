@@ -44,7 +44,7 @@ python termux/addwan.py
 
 **Kebutuhan:** Termux (install dari **F-Droid**, bukan Play Store), HP satu jaringan/WiFi dengan ONT, telnet aktif, firmware RP4423.
 
-**Panduan lengkap:** [`termux/INSTALL.md`](termux/INSTALL.md)
+**Panduan lengkap:** [	ermux/INSTALL.md](termux/INSTALL.md) (toolkit & menu) · [	ermux/INSTALL-APK-TERMUX.md](termux/INSTALL-APK-TERMUX.md) (download & install APK langsung dari Termux)
 
 ## Isi repo
 
@@ -106,4 +106,5 @@ Tool adalah milik pembuat/distributor aslinya. Distribusi di repo ini atas izin 
 ## Lapor masalah
 
 Buka tab **Issues**. Sertakan: versi tool, firmware ONT, langkah reproduksi.
+
 
