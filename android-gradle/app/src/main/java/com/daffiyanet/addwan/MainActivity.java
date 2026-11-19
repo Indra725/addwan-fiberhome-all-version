@@ -189,12 +189,28 @@ public class MainActivity extends Activity {
         macLabel.setTextColor(MUTED);
         macLabel.setTextSize(10);
         macLabel.setLetterSpacing(0.16f);
-        macLabel.setPadding(0, dp(10), 0, 0);
+        macLabel.setPadding(0, dp(10), 0, dp(4));
         c.addView(macLabel);
+
+        LinearLayout macRow = new LinearLayout(this);
+        macRow.setOrientation(LinearLayout.HORIZONTAL);
         etMac = field("94:6B:12:AB:CD:EF", null);
         etMac.setTextColor(GOLD);
         etMac.setInputType(0x00000001 | 0x00001000);
-        c.addView(etMac);
+        macRow.addView(etMac, lp(0, 1f, 0, 0, dp(8), 0));
+
+        Button bPaste = new Button(this);
+        bPaste.setText("PASTE");
+        bPaste.setAllCaps(false);
+        bPaste.setTextSize(11);
+        bPaste.setTextColor(0xFF00E5FF);
+        bPaste.setTypeface(Typeface.DEFAULT_BOLD);
+        bPaste.setMinWidth(dp(74));
+        bPaste.setMinHeight(dp(44));
+        bPaste.setBackground(round(INPUT_BG, 0xFF00E5FF, 12, 1));
+        bPaste.setOnClickListener(v -> pasteMacFromClipboard());
+        macRow.addView(bPaste, new LinearLayout.LayoutParams(dp(74), LinearLayout.LayoutParams.WRAP_CONTENT));
+        c.addView(macRow);
         main.addView(c);
 
         // ===== CARD: AKSI =====
@@ -376,6 +392,27 @@ public class MainActivity extends Activity {
         String hex = mac.replaceAll("[^0-9a-fA-F]", "");
         if (hex.length() < 6) throw new IllegalArgumentException("MAC tidak valid: " + mac);
         return "Fh@" + hex.substring(hex.length() - 6).toUpperCase();
+    }
+
+    private void pasteMacFromClipboard() {
+        try {
+            android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (cm == null || !cm.hasPrimaryClip()) { log("Clipboard kosong — copy MAC dari ONT dulu"); return; }
+            android.content.ClipData.Item item = cm.getPrimaryClip().getItemAt(0);
+            String raw = item.getText() == null ? "" : item.getText().toString();
+            String hex = raw.replaceAll("[^0-9a-fA-F]", "").toUpperCase();
+            if (hex.length() < 12) { log("Clipboard tidak berisi MAC valid (" + hex.length() + " hex)"); return; }
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < 12; i += 2) {
+                if (i > 0) sb.append(':');
+                sb.append(hex, i, i + 2);
+            }
+            String mac = sb.toString();
+            etMac.setText(mac);
+            log("MAC ditempel: " + mac);
+        } catch (Exception e) {
+            log("Gagal tempel: " + e);
+        }
     }
 
     private void doCheckOnt() {

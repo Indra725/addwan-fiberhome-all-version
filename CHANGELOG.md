@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.13] - 2026-11-19
+
+### Ditambahkan
+- **Tombol PASTE di kolom MAC** - sekali tap, isi MAC dari clipboard terformat otomatis (`948b12abcdef` -> `94:8B:12:AB:CD:EF`; case/spasi/dash diabaikan). Tidak perlu ketik manual lagi.
+- Rilis **v2.7** (`versionCode=8`, SHA256 `E5359AC3...`, 1.097.766 byte).
+
 ## [v2.12] - 2026-11-19
 
 ### Diperbaiki
