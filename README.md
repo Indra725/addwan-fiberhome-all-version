@@ -13,9 +13,10 @@ Tool Windows untuk teknisi ISP / installer jaringan yang bekerja dengan modem **
 
 Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH (Add WAN Fiberhome). Binari didistribusikan lewat **[Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases)**, bukan di git tree.
 
-| Versi | File | Tanggal |
-|---|---|---|
-| v1.0 | `Add_WAN_FH.exe` | 2026-10-21 |
+| Versi | File | Tanggal | Rilis |
+|---|---|---|---|
+| v1.0 | `Add_WAN_FH.exe` | 2026-10-21 | [releases/v1.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.0) |
+| v1.1 | `FiberhomeConfigUtility.exe` | 2026-10-22 | [releases/v1.1](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.1) |
 
 ## Verifikasi (v1.0)
 
@@ -23,6 +24,20 @@ Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH (Add WAN Fiberhome). Bi
 SHA256: B936642B5A31BA408AB2B9CC67017D34B5971E4555F82A1375F0BF548A52DB60
 MD5   : B581DADADA3E1A2D43D05D8FB5422527
 Ukuran: 12.528.392 byte (≈ 11,9 MB)
+```
+
+## Verifikasi (v1.1) — FiberhomeConfigUtility (upplink/LAN)
+
+```
+SHA256: 5289A36AE7D4C87080D8B3499E0EB5A3FC843D257898D49513E7796DA89A7879
+MD5   : BAD6A5C629EA4BE141447CD93184692F
+Ukuran: 10.700.931 byte
+```
+
+`FiberhomeConfigUtility.exe` — utility konfigurasi Fiberhome (port / bridge / LAN uplink). Sama seperti v1.0: unsigned, Windows Defender tidak mendeteksi ancaman. Cara verifikasi sama:
+
+```powershell
+Get-FileHash .\FiberhomeConfigUtility.exe -Algorithm SHA256
 ```
 
 Cara verifikasi di Windows PowerShell:
