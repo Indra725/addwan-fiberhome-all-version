@@ -1,124 +1,73 @@
-﻿# Add WAN FH — arsip semua versi tool
+﻿# Add WAN FH — satu aplikasi Android untuk HG6145F1/D2 & config ONT
 
-Tool teknisi ISP / installer jaringan untuk modem **Fiberhome ONU/ONT** (seri AN5506, dan HG6145F1/D2 firmware RP4423): menambahkan/mengaktifkan konfigurasi **WAN** agar bisa dipakai internet (PPPoE/DHCP/Static sesuai provisioning ONT).
+Aplikasi Android all-in-one untuk teknisi ISP / installer jaringan yang mengelola modem **Fiberhome ONU/ONT** (HG6145F1/HG6145D2, firmware RP4423/RP4307): tambah/konfigurasi WAN, baca & dekripsi config ONT, baca status uplink, kelola ACL — semua dari satu APK.
 
-> **Disclaimer**
-> - Tool ini **BUKAN** produk resmi Fiberhome / FiberHome Technologies dan **tidak** berafiliasi, didukung, atau di-endorse oleh Fiberhome dalam bentuk apa pun.
-> - Tool disediakan **as-is**, tanpa garansi apa pun. Penggunaan sepenuhnya tanggung jawab Anda.
-> - Gunakan **hanya** pada perangkat yang Anda miliki atau yang Anda berwenang kelola (jaringan ISP / instalasi pelanggan yang Anda tangani secara resmi).
-> - Dilarang menggunakan tool ini untuk mengakses perangkat yang bukan milik Anda / tanpa izin.
-> - File `.exe` **tidak ditandatangani secara digital** — Windows SmartScreen mungkin menolak. Selalu verifikasi checksum sebelum menjalankan.
+> Disclaimer: Tool ini **BUKAN** produk resmi Fiberhome / FiberHome Technologies. Tidak berafiliasi dengan mereka. Gunakan hanya pada perangkat milik Anda sendiri atau yang Anda berhak kelola secara resmi.
 
-## Tersedia di 3 platform
+## Download (APK)
 
-| Platform | Tool | Install | Root |
-|---|---|---|---|
-| Windows | `Add_WAN_FH.exe` (v1.0), `FiberhomeConfigUtility.exe` (v1.1) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases) | tidak perlu |
-| Android APK | `Add_WAN_FH_Mobile.apk` (v2.10) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.10) | tidak perlu |
-| **Termux (HP)** | `termux/addwan.py` (v2.3) | `pkg install python git && git clone` (lihat di bawah) | **tidak perlu** |
+**Rilis terbaru: v2.10**
+https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.10
 
-## Android APK (v2.10)
+`Add_WAN_FH_Mobile.apk` — SHA256: `C5B38AC44EB04A97F3B7BC28DC88BEF32A3CD36C741AA7E8723760B3B07FBFC6`
 
-**Download:** https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.10 — `Add_WAN_FH_Mobile.apk` (1.0 MB)
+## Fitur
 
-**Fitur:** CEK ONT (ping/TCP/custom webui) · UNLOCK via telnet + push custom-webui.sh dari HP (mini HTTP server internal) · STATUS & SET UPLINK (`get_uplink_info` / `set_uplink_info`)
+- **CEK ONT** — ping, cek TCP 23/80, deteksi custom webui, baca `uplink_info` & `acl_info` (login web UI via `do_login` + AES-128-CBC)
+- **UNLOCK** — telnet `gpon`/`Fh@MAC` (+ enable) — untuk perangkat yang mendukung
+- **STATUS UPLINK** — `get_uplink_info`, `get_acl_info`, `get_refresh_sessionid`
+- **SET UPLINK** — `set_uplink_info` (pilih port `dev.eth.1..5`)
+- **AKTIFKAN / MATIKAN ACL** — `get_acl_info` then `set_acl_info` toggle
+- **BACA CONFIG** — dekripsi file `usrconfig_conf` (XOR `0x2537` + gunzip + untar, anotasi AES-ECB otomatis: WiFi/TR-069 password terbaca)
+- **ENCRYPT CONFIG** — buat file config terenkripsi dari teks untuk upload kembali ke ONT (Local Upgrade)
+- **ENCRYPT/DECRYPT STRING** — AES-ECB satu per satu (key `ABCDEFGHIJKLMNOP`)
+- **PASTE MAC** — isi MAC dari clipboard terformat otomatis
+- **LOG auto-scroll**
+- **Donasi optional** — link donasi Daffiyanet + subscribe YouTube (tidak mengunci fitur apa pun)
 
-**Kebutuhan:** Android 4.1+, HP satu jaringan/WiFi/LAN dengan ONT, telnet aktif (`Security > ACL Settings`), firmware RP4423, backup config ONT dulu.
+## Kebutuhan
 
-**Verifikasi (v2.10):** `SHA256: C5B38AC44EB04A97F3B7BC28DC88BEF32A3CD36C741AA7E8723760B3B07FBFC6` (1.106.017 byte)
+- Android 4.1+
+- HP satu jaringan/WiFi/LAN dengan ONT (192.168.1.x)
+- Akses web UI ONT (`Security > ACL Settings` untuk mengaktifkan telnet bila memakai UNLOCK)
+- Firmware RP4423 (RP4307 untuk config baca saja)
 
-**Build dari source:** `cd android-gradle && .\gradlew.bat assembleRelease` (JDK 17+ & Android SDK)
+## Install (tanpa Google Play)
 
-## Termux (HP, tanpa PC, tanpa ROOT)
+1. Download `Add_WAN_FH_Mobile.apk` dari Releases
+2. Aktifkan **Install unknown apps** untuk aplikasi pemuat .apk Anda
+3. Tap file → **Install** / **Update**
 
-Tidak mau sideload APK? Jalankan langsung dari HP lewat **Termux** — Python mandiri, hanya koneksi TCP ke ONT:
+## Build dari source
 
-```bash
-pkg update && pkg install python git
-git clone https://github.com/Indra725/addwan-fiberhome-all-version.git
-cd addwan-fiberhome-all-version
-python termux/addwan.py
+```powershell
+cd android-gradle
+.\gradlew.bat assembleRelease
 ```
+( JDK 17+ & Android SDK di `C:\\Users\\andik\\android-sdk ` )
 
-**Menu:** CEK ONT → UNLOCK ONT → STATUS UPLINK → SET UPLINK → ganti IP → keluar.
+## Repo contents
 
-**Kebutuhan:** Termux (install dari **F-Droid**, bukan Play Store), HP satu jaringan/WiFi dengan ONT, telnet aktif, firmware RP4423.
-
-**Panduan lengkap:** [	ermux/INSTALL.md](termux/INSTALL.md) (toolkit & menu) · [	ermux/INSTALL-APK-TERMUX.md](termux/INSTALL-APK-TERMUX.md) (download & install APK langsung dari Termux)
-
-## Isi repo
-
-Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH & utility Fiberhome. Binari didistribusikan lewat **[Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases)**. Riwayat: [`CHANGELOG.md`](CHANGELOG.md). Source: `android/` (APK), `termux/` (Termux toolkit + payload).
-
-| Versi | File | Tanggal | Rilis |
-|---|---|---|---|
-| v2.5 | Add_WAN_FH_Mobile.apk (UI fix: header tidak terpotong status bar) | 2026-11-19 | [releases/v2.5](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.10) |
-| v2.3 | `Add_WAN_FH_Mobile.apk` (UI redesign Holo gelap, versi Termux rilis di repo) | 2026-11-19 | [releases/v2.3](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.10) |
-| v2.3 | `termux/addwan.py` + `termux/custom-webui.bin` (Local Upgrade web UI) | 2026-11-19 | (source di repo) |
-| v2.2 | `termux/addwan.py` (+ simulator test_mock.py) | 2026-11-19 | (source di repo) |
-| v2.1 | `termux/addwan.py` awal | 2026-11-19 | (source di repo) |
-| v2.2 | `Add_WAN_FH_Mobile.apk` (Gradle/AGP) | 2026-11-19 | [releases/v2.2](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.2) |
-| v2.1 | `Add_WAN_FH_Mobile.apk` (rusak: resources.arsc deflate) | 2026-11-19 | [releases/v2.1](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.1) |
-| v1.1 | `FiberhomeConfigUtility.exe` | 2026-10-22 | [releases/v1.1](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.1) |
-| v1.0 | `Add_WAN_FH.exe` | 2026-10-21 | [releases/v1.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.0) |
-
-## Verifikasi (v1.0)
-
-```
-SHA256: B936642B5A31BA408AB2B9CC67017D34B5971E4555F82A1375F0BF548A52DB60
-MD5   : B581DADADA3E1A2D43D05D8FB5422527
-```
-
-## Verifikasi (v1.1) — FiberhomeConfigUtility
-
-```
-SHA256: 5289A36AE7D4C87080D8B3499E0EB5A3FC843D257898D49513E7796DA89A7879
-MD5   : BAD6A5C629EA4BE141447CD93184692F
-```
-
-## Cara pakai umum (Windows)
-
-1. Download `Add_WAN_FH.exe` dari **Releases**.
-2. Verifikasi checksum SHA256.
-3. Hubungkan PC ke ONT (LAN / jaringan yang sama).
-4. Jalankan sebagai administrator, ikuti langkah di layar tool.
-5. Setelah selesai, restart ONT bila diminta dan tes koneksi.
-
-## Troubleshooting
-
-| Gejala | Solusi |
+| Path | Isi |
 |---|---|
-| SmartScreen memblokir | More info -> Run anyway (setelah verifikasi checksum) |
-| Tidak bisa konek ke ONT | Pastikan satu jaringan; telnet tidak di-block firewall/antivirus; telnet aktif (`Security > ACL Settings`) |
-| WAN tidak muncul | Restart ONT; cek ulang web UI ONT |
-| "Not a valid Win32 application" | Jalankan sebagai Administrator |
-| APK "App not installed" | Aktifkan *Install unknown apps* untuk aplikasi pembuka .apk; matikan Play Protect "Improve harmful app detection" |
-| Termux tidak ping ONT | Termux pakai TCP check (bukan ICMP) — pastikan ONT & HP satu subnet (192.168.1.x) |
+| `android-gradle/` | Proyek Gradle/AGP (build resmi, AGP 9.1.1) |
+| `termux/` | Termux toolkit Python (alternatif tanpa install APK) |
+| `docs/` | Dokumentasi teknis (uplink, kompatibilitas firmware) |
+
+## Versi
+
+Lihat [`CHANGELOG.md`](CHANGELOG.md) untuk riwayat versi.
 
 ## Lisensi & hak cipta
 
-Tool adalah milik pembuat/distributor aslinya. Distribusi di repo ini atas izin dari pemilik/distributor. Pertanyaan lisensi: buka Issue di repo ini.
+Tool adalah milik pembuat/distributor aslinya. Distribusi di repo ini atas izin dari pemilik/distributor. IP/Trademark Fiberhome adalah milik pemegang trademark masing-masing.
 
 ## Donasi / support
 
-- **Halaman donasi:** https://indra725.github.io/donasi/
-- **QRIS:** scan dari semua e-wallet / m-banking (DAFFIYANET, Konter - NMID ID1025401523762)
-- **E-Wallet (DANA / GoPay / OVO / ShopeePay):** **08516163719** a.n. **Daffiyanet**
-- **WhatsApp:** [wa.me/628516163719](https://wa.me/628516163719)
+- **Donasi:** https://indra725.github.io/donasi/ (QRIS semua e-wallet)
+- **E-Wallet:** 08516163719 a.n. Daffiyanet
+- **WhatsApp:** https://wa.me/628516163719
 
 ## Lapor masalah
 
 Buka tab **Issues**. Sertakan: versi tool, firmware ONT, langkah reproduksi.
-
-
-
-
-
-
-
-
-
-
-
-
-

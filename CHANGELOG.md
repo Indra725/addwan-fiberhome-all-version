@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.17] - 2026-11-19
+
+### Diubah
+- **Windows EXE dihapus dari repo & Releases** (v1.0 Add_WAN_FH.exe, v1.1 FiberhomeConfigUtility.exe) - semua fungsinya sudah masuk ke satu APK Android.
+- `android/` (build manual lama) dihapus dari repo - digantikan `android-gradle/`.
+- README ditulis ulang: Satu Produk (Add_WAN_FH_Mobile APK).
+
 ## [v2.16] - 2026-11-19
 
 ### Ditambahkan
