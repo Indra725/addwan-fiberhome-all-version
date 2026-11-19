@@ -4,16 +4,26 @@ Aplikasi Android all-in-one untuk teknisi ISP / installer jaringan yang mengelol
 
 > Disclaimer: Tool ini **BUKAN** produk resmi Fiberhome / FiberHome Technologies. Tidak berafiliasi dengan mereka. Gunakan hanya pada perangkat milik Anda sendiri atau yang Anda berhak kelola secara resmi.
 
-## Download (APK)
+## Download
 
-**Rilis terbaru: v2.14**
-https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.14
+**Rilis terbaru: v2.15**
+https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.15
 
-`Add_WAN_FH_Mobile.apk` - SHA256: `FD2DFCCBAE15F163D14A6DE79DA07A41F825ED7B2C49CD71A5B34BB684564AAD` (1.107.332 byte)
+| File | Isi |
+|---|---|
+| `Add_WAN_FH_Mobile.apk` | APK Android (versionCode 16 / v2.15) |
+| `Add_WAN_FH.exe` | Aplikasi Windows asli (arsip, tidak diubah) |
+
+APK SHA256: `9120B9CCE79C0BE321730CAFCF89C7D1A1B426FAB73EAC16AC156C0C3965AEB2` (1.113.137 byte)
 
 ## Fitur
 
-- **CEK ONT** — ping, cek TCP 23/80, deteksi custom webui, baca `uplink_info` & `acl_info` (login web UI via `do_login` + AES-128-CBC)
+- **ADD WAN — load preconfig IDN_XL** — **fungsi asli `Add_WAN_FH.exe`**, dijalankan ulang lewat telnet: `gpon` → `Fh@SN` → `en` → `cd factorydir` → `load preconfig IDN_XL`
+- **BACA DAFTAR WAN** — `get_allwan_info` (nama, tipe, addressing, VLAN, NAT, enable)
+- **TAMBAH WAN** — `wan_add_new`: PPPoE Route, IPoE DHCP, IPoE Static, Bridge; VLAN ID, VLAN priority, MTU, NAT, username/password
+- **EDIT WAN** — `wan_modify` (field terisi otomatis dari WAN terpilih)
+- **HAPUS WAN** — `wan_delete` (konfirmasi ganda)
+- **CEK ONT** - ping, cek TCP 23/80, deteksi custom webui, baca `uplink_info` & `acl_info` (login web UI via `do_login` + AES-128-CBC)
 - **UNLOCK** — telnet `gpon`/`Fh@MAC` (+ enable) — untuk perangkat yang mendukung
 - **STATUS UPLINK** — `get_uplink_info`, `get_acl_info`, `get_refresh_sessionid`
 - **SET UPLINK** — `set_uplink_info` (pilih port `dev.eth.1..5`)
@@ -51,8 +61,19 @@ cd android-gradle
 | Path | Isi |
 |---|---|
 | `android-gradle/` | Proyek Gradle/AGP (build resmi, AGP 9.1.1) |
+| `windows/Add_WAN_FH.exe` | Aplikasi Windows asli (Delphi/VCL, tidak diubah) |
 | `termux/` | Termux toolkit Python (alternatif tanpa install APK) |
-| `docs/` | Dokumentasi teknis (uplink, kompatibilitas firmware) |
+| `docs/` | Dokumentasi teknis + [`TEST-REPORT-v2.15.md`](docs/TEST-REPORT-v2.15.md) |
+
+## Aplikasi Windows asli
+
+`Add_WAN_FH.exe` tetap disertakan apa adanya. Hasil analisis:
+
+- Delphi (Object Pascal) + VCL, komunikasi telnet lewat Indy `TIdTelnet`
+- Form hanya berisi SN, Host, Port, tombol Connect, dan memo output
+- Perintah yang dijalankan: `gpon` → `Fh@<6 hex SN>` → `en` → `cd factorydir` → `load preconfig IDN_XL`
+
+APK v2.15 menjalankan urutan yang sama pada tombol **ADD WAN — load preconfig IDN_XL (EXE)**, lalu menambahkan manajemen WAN lewat CGI resmi ONT.
 
 ## Versi
 

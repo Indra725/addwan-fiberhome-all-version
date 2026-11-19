@@ -25,10 +25,11 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity {
 
-    private EditText etIp, etMac, etUser, etPass;
+    private EditText etIp, etMac, etUser, etPass, etSn;
     private TextView tvLog;
     private android.widget.ScrollView logScroll;
     private android.widget.Spinner spPort;
+    private String ontSessionId = null;
     private final java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newCachedThreadPool();
 
     private static final int BG = 0xFF070B1A;
@@ -231,6 +232,18 @@ public class MainActivity extends Activity {
         bPaste.setOnClickListener(v -> pasteMacFromClipboard());
         macRow.addView(bPaste, new LinearLayout.LayoutParams(dp(74), LinearLayout.LayoutParams.WRAP_CONTENT));
         c.addView(macRow);
+
+        TextView snLabel = new TextView(this);
+        snLabel.setText("SN ONT (opsional \u2014 dipakai EXE untuk password telnet)");
+        snLabel.setTextColor(MUTED);
+        snLabel.setTextSize(10);
+        snLabel.setLetterSpacing(0.16f);
+        snLabel.setPadding(0, dp(10), 0, dp(4));
+        c.addView(snLabel);
+        etSn = field("FHTT9C7D6CA8", null);
+        etSn.setTextColor(0xFF00E5FF);
+        etSn.setInputType(0x00000001 | 0x00001000);
+        c.addView(etSn);
         main.addView(c);
 
         // ===== CARD: AKUN ONT =====
@@ -308,6 +321,29 @@ public class MainActivity extends Activity {
         c.addView(bEnc);
         c.addView(bAesE);
         c.addView(bAesD);
+        main.addView(c);
+
+        // ===== CARD: WAN (fungsi asli EXE + CGI ONT) =====
+        c = card();
+        c.addView(sectionTitle("WAN \u2014 fungsi asli EXE + CGI ONT"));
+
+        TextView wanNote = new TextView(this);
+        wanNote.setText("ADD WAN (IDN_XL) menjalankan perintah asli Add_WAN_FH.exe lewat telnet:  cd factorydir \u2192 load preconfig IDN_XL");
+        wanNote.setTextSize(10);
+        wanNote.setTextColor(MUTED);
+        wanNote.setPadding(0, 0, 0, dp(6));
+        c.addView(wanNote);
+
+        Button bPre = act("ADD WAN \u2014 load preconfig IDN_XL (EXE)", 0xFFB45309);
+        Button bWanList = act("BACA DAFTAR WAN", 0xFF0891B2);
+        Button bWanAdd = act("TAMBAH WAN (PPPoE / IPoE / Static)", 0xFF15803D);
+        Button bWanEdit = act("EDIT WAN", 0xFF7C3AED);
+        Button bWanDel = act("HAPUS WAN", 0xFFB91C1C);
+        c.addView(bPre);
+        c.addView(bWanList);
+        c.addView(bWanAdd);
+        c.addView(bWanEdit);
+        c.addView(bWanDel);
         main.addView(c);
 
         // ===== CARD: LOG =====
@@ -412,6 +448,16 @@ public class MainActivity extends Activity {
         bAesE.setOnClickListener(v -> showAesDialog(true));
         bAesD.setOnClickListener(v -> showAesDialog(false));
 
+        bPre.setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("ADD WAN \u2014 load preconfig IDN_XL")
+                .setMessage("Perintah asli Add_WAN_FH.exe:\n\ncd factorydir\nload preconfig IDN_XL\n\nProfil WAN ISP (IDN_XL) akan dimuat ke ONT lewat telnet. Lanjutkan?")
+                .setPositiveButton("Ya, JALANKAN", (d, w) -> runTask(() -> doAddWanPreconfig(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel))
+                .setNegativeButton("Batal", null).show());
+        bWanList.setOnClickListener(v -> runTask(() -> doReadWan(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
+        bWanAdd.setOnClickListener(v -> showWanDialog(null));
+        bWanEdit.setOnClickListener(v -> runTask(() -> pickWanForEdit(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
+        bWanDel.setOnClickListener(v -> runTask(() -> pickWanForDelete(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
+
         root.addView(main);
         return root;
     }
@@ -495,6 +541,7 @@ public class MainActivity extends Activity {
             String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
             saveOntCredentials();
             if (resp.contains("\"login_result\":0")) {
+                ontSessionId = sessionid;
                 log("login web UI ONT: OK");
                 return sessionid;
             }
@@ -515,6 +562,7 @@ public class MainActivity extends Activity {
         String ip = ontIp();
         String body = "ajaxmethod=" + ajaxmethod
                 + (params == null || params.isEmpty() ? "" : "&" + params)
+                + (ontSessionId == null ? "" : "&sessionid=" + ontSessionId)
                 + "&_=" + (System.currentTimeMillis() % 1000000000);
         return httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
     }
@@ -1037,6 +1085,283 @@ public class MainActivity extends Activity {
         String after = ontCgi("get_acl_info", null);
         logJson("acl sesudah", after);
         log(enabled ? "ACL sekarang NONAKTIF" : "ACL sekarang AKTIF");
+    }
+
+    // ================= WAN: fungsi asli EXE + CGI ONT =================
+
+    /** Password telnet: EXE memakai SN (Fh@ + Mid(SN,5,6)); fallback ke MAC. */
+    private String telnetPassword() {
+        String sn = etSn == null ? "" : etSn.getText().toString().trim();
+        String hexSn = sn.replaceAll("[^0-9a-fA-F]", "");
+        if (hexSn.length() >= 10) return "Fh@" + hexSn.substring(4, 10).toUpperCase();
+        return macPassword(etMac.getText().toString().trim());
+    }
+
+    /** Urutan perintah persis Add_WAN_FH.exe: gpon -> Fh@SN -> en -> cd factorydir -> load preconfig IDN_XL */
+    private void doAddWanPreconfig() {
+        String ip = ontIp();
+        log("=== ADD WAN (load preconfig IDN_XL) " + ip + " ===");
+        String pass = telnetPassword();
+        log("password telnet : " + pass);
+        try (java.net.Socket sock = new java.net.Socket()) {
+            sock.connect(new java.net.InetSocketAddress(ip, 23), 5000);
+            sock.setSoTimeout(15000);
+            Telnet t = new Telnet(sock);
+            t.readUntil("ogin:", 10000);
+            t.send("gpon\r\n");
+            log("login           : gpon");
+            t.readUntil("assword:", 10000);
+            t.send(pass + "\r\n");
+            log("password        : terkirim");
+            t.readUntil("user>", 10000);
+            t.send("en\r\n");
+            log("> en");
+            String afterEn = t.readUntil("config#", 10000);
+            if (afterEn.toLowerCase().contains("assword")) {
+                t.send(pass + "\r\n");
+                t.readUntil("config#", 10000);
+            }
+            log("mode            : config#");
+            t.send("cd factorydir\r\n");
+            t.readUntil("factorydir#", 10000);
+            log("> cd factorydir");
+            t.send("load preconfig IDN_XL\r\n");
+            log("> load preconfig IDN_XL");
+            String out = t.readAll(20000);
+            for (String line : out.split("\n")) {
+                String s = line.replace("\r", "").trim();
+                if (!s.isEmpty()) log("    " + s);
+            }
+            t.close();
+            String low = out.toLowerCase();
+            log(low.contains("sukses") || low.contains("success")
+                    ? "=== SELESAI: profil IDN_XL dimuat ==="
+                    : "=== SELESAI: cek output di atas ===");
+        } catch (Exception e) {
+            log("ADD WAN GAGAL: " + e);
+            log("Pastikan telnet aktif & HP satu jaringan dengan ONT.");
+        }
+    }
+
+    private String enc(String s) {
+        try { return java.net.URLEncoder.encode(s == null ? "" : s, "UTF-8"); }
+        catch (Exception e) { return s == null ? "" : s; }
+    }
+
+    private org.json.JSONArray wanArray() {
+        String resp = ontCgi("get_allwan_info", null);
+        if (resp == null) return null;
+        try { return new org.json.JSONObject(resp).optJSONArray("wan"); }
+        catch (Exception e) { log("parse WAN gagal: " + e); log("respons: " + resp); return null; }
+    }
+
+    private void doReadWan() {
+        log("=== DAFTAR WAN ===");
+        if (ontLogin() == null) return;
+        String resp = ontCgi("get_allwan_info", null);
+        log("respons: " + (resp == null ? "null" : (resp.length() > 1500 ? resp.substring(0, 1500) + "..." : resp)));
+        try {
+            org.json.JSONObject o = new org.json.JSONObject(resp);
+            org.json.JSONArray arr = o.optJSONArray("wan");
+            if (arr == null) { log("tidak ada array 'wan'"); return; }
+            for (int i = 0; i < arr.length(); i++) {
+                org.json.JSONObject w = arr.getJSONObject(i);
+                log(String.format("[%d] %s | %s | %s | VLAN %s | NAT %s | Enable %s",
+                        i,
+                        w.optString("Name", "?"),
+                        w.optString("ConnectionType", "?"),
+                        w.optString("AddressingType", "-"),
+                        w.optString("VLANID", w.optString("vlanid", "?")),
+                        w.optString("NATEnabled", "?"),
+                        w.optString("Enable", "?")));
+            }
+            log("total: " + arr.length() + " WAN");
+        } catch (Exception e) { log("parse: " + e); }
+    }
+
+    private void pickWanForDelete() {
+        if (ontLogin() == null) return;
+        final org.json.JSONArray arr = wanArray();
+        if (arr == null || arr.length() == 0) { log("tidak ada WAN untuk dihapus"); return; }
+        final String[] labels = new String[arr.length()];
+        for (int i = 0; i < arr.length(); i++) {
+            org.json.JSONObject w = arr.optJSONObject(i);
+            labels[i] = (i + 1) + ". " + w.optString("Name", "?") + "  (" + w.optString("ConnectionType", "?") + ")";
+        }
+        runOnUiThread(() -> new AlertDialog.Builder(this)
+                .setTitle("Hapus WAN")
+                .setItems(labels, (d, which) -> {
+                    final org.json.JSONObject w = arr.optJSONObject(which);
+                    new AlertDialog.Builder(this)
+                            .setTitle("Hapus " + w.optString("Name", "?"))
+                            .setMessage("WAN dihapus dari ONT. Koneksi internet bisa terputus.\n\nLanjutkan?")
+                            .setPositiveButton("HAPUS", (dd, ww) -> io.execute(() -> deleteWan(w)))
+                            .setNegativeButton("Batal", null).show();
+                }).show());
+    }
+
+    private void deleteWan(org.json.JSONObject w) {
+        log("=== HAPUS WAN " + w.optString("Name", "?") + " ===");
+        String resp = ontCgi("wan_delete",
+                "wan_index=" + enc(w.optString("wan_index"))
+                        + "&wan_session_index=" + enc(w.optString("wan_session_index"))
+                        + "&wan_iporppp_old=" + enc(w.optString("iporppp")));
+        log("respons: " + resp);
+        doReadWan();
+    }
+
+    private void pickWanForEdit() {
+        if (ontLogin() == null) return;
+        final org.json.JSONArray arr = wanArray();
+        if (arr == null || arr.length() == 0) { log("tidak ada WAN untuk diedit"); return; }
+        final String[] labels = new String[arr.length()];
+        for (int i = 0; i < arr.length(); i++) {
+            org.json.JSONObject w = arr.optJSONObject(i);
+            labels[i] = (i + 1) + ". " + w.optString("Name", "?") + "  (" + w.optString("ConnectionType", "?") + ")";
+        }
+        runOnUiThread(() -> new AlertDialog.Builder(this)
+                .setTitle("Edit WAN")
+                .setItems(labels, (d, which) -> showWanDialog(arr.optJSONObject(which)))
+                .show());
+    }
+
+    private EditText dlgField(LinearLayout parent, String label, String value) {
+        TextView tv = new TextView(this);
+        tv.setText(label);
+        tv.setTextSize(10);
+        tv.setTextColor(MUTED);
+        tv.setPadding(0, dp(8), 0, dp(2));
+        parent.addView(tv);
+        EditText e = new EditText(this);
+        e.setText(value);
+        e.setTextSize(13);
+        e.setTextColor(TEXT);
+        e.setBackground(round(INPUT_BG, INPUT_STR, 10, 1));
+        e.setPadding(dp(10), dp(8), dp(10), dp(8));
+        parent.addView(e);
+        return e;
+    }
+
+    private Spinner dlgSpinner(LinearLayout parent, String label, String[] items) {
+        TextView tv = new TextView(this);
+        tv.setText(label);
+        tv.setTextSize(10);
+        tv.setTextColor(MUTED);
+        tv.setPadding(0, dp(8), 0, dp(2));
+        parent.addView(tv);
+        Spinner sp = new Spinner(this);
+        ArrayAdapter<String> a = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, items);
+        a.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        sp.setAdapter(a);
+        sp.setBackground(round(INPUT_BG, INPUT_STR, 10, 1));
+        parent.addView(sp);
+        return sp;
+    }
+
+    private void showWanDialog(final org.json.JSONObject existing) {
+        final boolean edit = existing != null;
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.VERTICAL);
+        box.setPadding(dp(18), dp(6), dp(18), dp(6));
+        ScrollView sc = new ScrollView(this);
+        sc.addView(box);
+
+        final EditText fName = dlgField(box, "Nama WAN", edit ? existing.optString("Name", "INTERNET") : "INTERNET");
+        final Spinner spMode = dlgSpinner(box, "Mode", new String[]{"Route", "Bridge"});
+        final Spinner spType = dlgSpinner(box, "Tipe koneksi", new String[]{"PPPoE", "IPoE DHCP", "IPoE Static"});
+        final EditText fVlan = dlgField(box, "VLAN ID (0 = tanpa VLAN)", "0");
+        final EditText fPrio = dlgField(box, "VLAN Priority (0-7)", "0");
+        final EditText fMtu = dlgField(box, "MTU", "1492");
+        final EditText fUser = dlgField(box, "Username PPPoE", "");
+        final EditText fPass = dlgField(box, "Password PPPoE", "");
+        final EditText fIp = dlgField(box, "IP statis (IPoE Static)", "");
+        final EditText fMask = dlgField(box, "Subnet mask", "255.255.255.0");
+        final EditText fGw = dlgField(box, "Gateway", "");
+        final EditText fDns = dlgField(box, "DNS (pisah koma)", "");
+
+        if (edit) {
+            String ct = existing.optString("ConnectionType", "").toLowerCase();
+            if (ct.contains("bridged")) spMode.setSelection(1);
+            if (ct.startsWith("pppoe")) spType.setSelection(0);
+            fVlan.setText(existing.optString("VLANID", existing.optString("vlanid", "0")));
+            fPrio.setText(existing.optString("8021", existing.optString("p8021", "0")));
+            fMtu.setText(existing.optString("MTU", existing.optString("mtu", "1492")));
+            fUser.setText(existing.optString("Username", ""));
+        }
+
+        new AlertDialog.Builder(this)
+                .setTitle(edit ? "Edit WAN" : "Tambah WAN")
+                .setView(sc)
+                .setPositiveButton(edit ? "SIMPAN" : "TAMBAH", (d, w) -> {
+                    final String name = fName.getText().toString().trim();
+                    final String mode = spMode.getSelectedItem().toString();
+                    final String type = spType.getSelectedItem().toString();
+                    final String vlan = fVlan.getText().toString().trim();
+                    final String prio = fPrio.getText().toString().trim();
+                    final String mtu = fMtu.getText().toString().trim();
+                    final String user = fUser.getText().toString().trim();
+                    final String pass = fPass.getText().toString();
+                    final String ip = fIp.getText().toString().trim();
+                    final String mask = fMask.getText().toString().trim();
+                    final String gw = fGw.getText().toString().trim();
+                    final String dns = fDns.getText().toString().trim();
+                    io.execute(() -> applyWan(existing, name, mode, type, vlan, prio, mtu, user, pass, ip, mask, gw, dns));
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
+
+    private void applyWan(org.json.JSONObject existing, String name, String mode, String type,
+                          String vlan, String prio, String mtu, String user, String pass,
+                          String ip, String mask, String gw, String dns) {
+        log("=== " + (existing == null ? "TAMBAH" : "EDIT") + " WAN: " + name + " ===");
+        if (ontLogin() == null) return;
+
+        boolean bridge = mode.equals("Bridge");
+        String connType;
+        String iporppp;
+        String addr = "";
+        if (bridge) { connType = "PPPoE_Bridged"; iporppp = "2"; }
+        else if (type.startsWith("PPPoE")) { connType = "PPPoE_Routed"; iporppp = "2"; }
+        else { connType = "IP_Routed"; iporppp = "1"; addr = type.contains("DHCP") ? "DHCP" : "Static"; }
+
+        StringBuilder b = new StringBuilder();
+        b.append("wan_iporppp_new=").append(iporppp);
+        b.append("&ConnectionType=").append(enc(connType));
+        b.append("&ServiceList=INTERNET");
+        b.append("&IPMode=IPv4");
+        b.append("&mtu=").append(enc(mtu));
+        b.append("&VLANEnable=").append(vlan.isEmpty() || "0".equals(vlan) ? "0" : "1");
+        b.append("&vlanid=").append(enc(vlan.isEmpty() ? "0" : vlan));
+        b.append("&p8021=").append(enc(prio));
+        b.append("&LanInterface=");
+        if (!addr.isEmpty()) b.append("&AddressingType=").append(addr);
+        if (!user.isEmpty()) b.append("&Username=").append(enc(user));
+        if (!pass.isEmpty()) b.append("&WPd=").append(enc(pass));
+        if ("Static".equals(addr)) {
+            b.append("&ExternalIPAddress=").append(enc(ip));
+            b.append("&SubnetMask=").append(enc(mask));
+            b.append("&DefaultGateway=").append(enc(gw));
+            b.append("&DNSServers=").append(enc(dns));
+        }
+        b.append("&NATEnabled=").append(bridge ? "0" : "1");
+        b.append("&Enable=1");
+        b.append("&X_FH_AutoConnection=1");
+
+        String action;
+        if (existing == null) {
+            action = "wan_add_new";
+        } else {
+            action = "wan_modify";
+            b.append("&wan_index=").append(enc(existing.optString("wan_index")));
+            b.append("&wan_session_index=").append(enc(existing.optString("wan_session_index")));
+            b.append("&wan_iporppp_old=").append(enc(existing.optString("iporppp")));
+            b.append("&wan_name=").append(enc(name));
+        }
+        log("POST " + action);
+        String resp = ontCgi(action, b.toString());
+        log("respons: " + resp);
+        doReadWan();
     }
 
     private String httpRequest(String method, String url, String body) {

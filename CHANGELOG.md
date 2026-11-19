@@ -2,7 +2,22 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
-## [v2.19] - 2026-11-19
+## [v2.15] - 2026-11-20
+
+### Ditambahkan
+- **ADD WAN — load preconfig IDN_XL (EXE)** — fungsi asli `Add_WAN_FH.exe` diporting apa adanya ke telnet Android: `gpon` → `Fh@SN` → `en` → `cd factorydir` → `load preconfig IDN_XL`.
+- **BACA DAFTAR WAN** — `get_allwan_info`, tampil nama/tipe/addressing/VLAN/NAT/enable.
+- **TAMBAH WAN** — `wan_add_new` dengan PPPoE Route, IPoE DHCP, IPoE Static, Bridge; VLAN ID, priority, MTU, NAT.
+- **EDIT WAN** — `wan_modify`, field terisi otomatis dari WAN terpilih.
+- **HAPUS WAN** — `wan_delete` dengan konfirmasi ganda.
+- Field **SN ONT** opsional untuk menurunkan password telnet persis seperti EXE (`Fh@` + `Mid(SN,5,6)`).
+- `docs/TEST-REPORT-v2.15.md` — analisis EXE + hasil pengujian jujur.
+- `windows/Add_WAN_FH.exe` — aplikasi Windows asli dikembalikan ke repo.
+
+### Diubah
+- `ontCgi` sekarang menyertakan `sessionid` (wajib untuk endpoint WAN).
+
+## [v2.14] - 2026-11-19
 
 ### Diperbaiki
 - **Macet & tidak ada output** - executor berubah dari single-thread ke cached (tombol tidak lagi terblokir di belakang auto-login).

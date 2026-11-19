@@ -1,2 +1,14 @@
-﻿# Build artifacts&#10;android/&#10;android-gradle/build/&#10;android-gradle/.gradle/&#10;__pycache__/&#10;*.pyc&#10;.spec&#10;build/&#10;
+﻿# Build artifacts
+android/
+android-gradle/build/
+android-gradle/.gradle/
+android-gradle/app/build/
+build/
+*.pyc
+__pycache__/
+.spec
 termux/__pycache__/
+
+# Local
+local.properties
+*.keystore
