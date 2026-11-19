@@ -26,7 +26,7 @@ import android.widget.TextView;
 public class MainActivity extends Activity {
 
     private EditText etIp, etMac, etUser, etPass, etSn;
-    private TextView tvLog;
+    private TextView tvLog, tvStatus;
     private android.widget.ScrollView logScroll;
     private android.widget.Spinner spPort;
     private String ontSessionId = null;
@@ -191,6 +191,66 @@ public class MainActivity extends Activity {
         sub.setPadding(0, dp(4), 0, dp(12));
         main.addView(sub);
 
+        // ===== STATUS BAR =====
+        tvStatus = new TextView(this);
+        tvStatus.setText("SIAP \u2014 isi IP ONT + MAC, lalu tekan tombol.");
+        tvStatus.setTextSize(11);
+        tvStatus.setTypeface(Typeface.DEFAULT_BOLD);
+        tvStatus.setTextColor(0xFF7CFFC4);
+        tvStatus.setBackground(round(0xFF07130E, 0xFF1E4A38, 10, 1));
+        tvStatus.setPadding(dp(12), dp(8), dp(12), dp(8));
+        LinearLayout.LayoutParams stLp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        stLp.setMargins(0, 0, 0, dp(12));
+        tvStatus.setLayoutParams(stLp);
+        main.addView(tvStatus);
+
+        // ===== CARD: LOG (di atas supaya output selalu terlihat) =====
+        LinearLayout logCard = card();
+        LinearLayout logHead = new LinearLayout(this);
+        logHead.setOrientation(LinearLayout.HORIZONTAL);
+        logHead.setGravity(Gravity.CENTER_VERTICAL);
+
+        TextView logHeader = new TextView(this);
+        logHeader.setText("* * *   output");
+        logHeader.setTextSize(11);
+        logHeader.setTypeface(Typeface.MONOSPACE);
+        logHeader.setTextColor(0xFFFF5C5C);
+        logHeader.setPadding(0, 0, 0, dp(8));
+        logHead.addView(logHeader, lp(0, 1f, 0, 0, dp(8), 0));
+
+        Button bCopyLog = new Button(this);
+        bCopyLog.setText("SALIN");
+        bCopyLog.setAllCaps(false);
+        bCopyLog.setTextSize(10);
+        bCopyLog.setTextColor(0xFF00E5FF);
+        bCopyLog.setTypeface(Typeface.DEFAULT_BOLD);
+        bCopyLog.setMinWidth(dp(64));
+        bCopyLog.setMinHeight(dp(36));
+        bCopyLog.setBackground(round(INPUT_BG, 0xFF00E5FF, 10, 1));
+        bCopyLog.setOnClickListener(v -> copyLog());
+        logHead.addView(bCopyLog, new LinearLayout.LayoutParams(dp(68), LinearLayout.LayoutParams.WRAP_CONTENT));
+        logCard.addView(logHead);
+
+        tvLog = new TextView(this);
+        tvLog.setTextSize(12);
+        tvLog.setTypeface(Typeface.MONOSPACE);
+        tvLog.setTextColor(MINT);
+        tvLog.setTextIsSelectable(true);
+        tvLog.setPadding(dp(12), dp(10), dp(12), dp(10));
+        tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
+        tvLog.setText("Selamat datang di Add WAN FH.\nSambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
+        ScrollView logScroll = new ScrollView(this);
+        logScroll.setPadding(0, 0, 0, 0);
+        logScroll.setFillViewport(true);
+        logScroll.setScrollbarFadingEnabled(false);
+        logScroll.addView(tvLog);
+        logScroll.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(240)));
+        this.logScroll = logScroll;
+        logCard.addView(logScroll);
+        main.addView(logCard);
+
         // ===== CARD: KONEKSI =====
         LinearLayout c = card();
         c.addView(sectionTitle("Koneksi ONT"));
@@ -328,7 +388,7 @@ public class MainActivity extends Activity {
         c.addView(sectionTitle("WAN \u2014 fungsi asli EXE + CGI ONT"));
 
         TextView wanNote = new TextView(this);
-        wanNote.setText("ADD WAN (IDN_XL) menjalankan perintah asli Add_WAN_FH.exe lewat telnet:  cd factorydir \u2192 load preconfig IDN_XL");
+        wanNote.setText("ADD WAN (IDN_XL) = perintah asli Add_WAN_FH.exe lewat telnet (port 23).\nBACA/TAMBAH/EDIT/HAPUS WAN = CGI ONT, butuh USERNAME + PASSWORD web UI di kartu Koneksi ONT.");
         wanNote.setTextSize(10);
         wanNote.setTextColor(MUTED);
         wanNote.setPadding(0, 0, 0, dp(6));
@@ -344,35 +404,6 @@ public class MainActivity extends Activity {
         c.addView(bWanAdd);
         c.addView(bWanEdit);
         c.addView(bWanDel);
-        main.addView(c);
-
-        // ===== CARD: LOG =====
-        c = card();
-        TextView logHeader = new TextView(this);
-        logHeader.setText("* * *   output");
-        logHeader.setTextSize(11);
-        logHeader.setTypeface(Typeface.MONOSPACE);
-        logHeader.setTextColor(0xFFFF5C5C);
-        logHeader.setPadding(0, 0, 0, dp(8));
-        c.addView(logHeader);
-
-        tvLog = new TextView(this);
-        tvLog.setTextSize(12);
-        tvLog.setTypeface(Typeface.MONOSPACE);
-        tvLog.setTextColor(MINT);
-        tvLog.setBackgroundColor(0xFF05070F);
-        tvLog.setPadding(dp(12), dp(10), dp(12), dp(10));
-        tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
-        tvLog.setText("Selamat datang di Add WAN FH.\nSambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
-        ScrollView logScroll = new ScrollView(this);
-        logScroll.setPadding(0, 0, 0, 0);
-        logScroll.setFillViewport(true);
-        logScroll.setScrollbarFadingEnabled(false);
-        logScroll.addView(tvLog);
-        logScroll.setLayoutParams(new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(260)));
-        this.logScroll = logScroll;
-        c.addView(logScroll);
         main.addView(c);
 
         // ===== CARD: DONASI / COMMIT (opsional) =====
@@ -427,13 +458,13 @@ public class MainActivity extends Activity {
         footer.setPadding(0, dp(4), 0, 0);
         main.addView(footer);
 
-        bCheck.setOnClickListener(v -> runTask(() -> doCheckOnt(), bCheck, bUnlock, bStatus, bSet, bAcl));
-        bUnlock.setOnClickListener(v -> runTask(() -> doUnlock(), bCheck, bUnlock, bStatus, bSet, bAcl));
-        bStatus.setOnClickListener(v -> runTask(() -> doStatusUplink(), bCheck, bUnlock, bStatus, bSet, bAcl));
+        bCheck.setOnClickListener(v -> runTask("CEK ONT", () -> doCheckOnt(), bCheck, bUnlock, bStatus, bSet, bAcl));
+        bUnlock.setOnClickListener(v -> runTask("UNLOCK", () -> doUnlock(), bCheck, bUnlock, bStatus, bSet, bAcl));
+        bStatus.setOnClickListener(v -> runTask("STATUS UPLINK", () -> doStatusUplink(), bCheck, bUnlock, bStatus, bSet, bAcl));
         bSet.setOnClickListener(v -> new AlertDialog.Builder(this)
                 .setTitle("Set uplink?")
                 .setMessage("WAN akan memakai port LAN " + spPort.getSelectedItem() + ".\n\nHP harus satu jaringan dengan ONT. Lanjutkan?")
-                .setPositiveButton("Ya, SET", (d, w) -> runTask(() -> doSetUplink(), bCheck, bUnlock, bStatus, bSet, bAcl))
+                .setPositiveButton("Ya, SET", (d, w) -> runTask("SET UPLINK", () -> doSetUplink(), bCheck, bUnlock, bStatus, bSet, bAcl))
                 .setNegativeButton("Batal", null)
                 .show());
         bAcl.setOnClickListener(v -> {
@@ -451,12 +482,12 @@ public class MainActivity extends Activity {
         bPre.setOnClickListener(v -> new AlertDialog.Builder(this)
                 .setTitle("ADD WAN \u2014 load preconfig IDN_XL")
                 .setMessage("Perintah asli Add_WAN_FH.exe:\n\ncd factorydir\nload preconfig IDN_XL\n\nProfil WAN ISP (IDN_XL) akan dimuat ke ONT lewat telnet. Lanjutkan?")
-                .setPositiveButton("Ya, JALANKAN", (d, w) -> runTask(() -> doAddWanPreconfig(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel))
+                .setPositiveButton("Ya, JALANKAN", (d, w) -> runTask("ADD WAN IDN_XL", () -> doAddWanPreconfig(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel))
                 .setNegativeButton("Batal", null).show());
-        bWanList.setOnClickListener(v -> runTask(() -> doReadWan(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
+        bWanList.setOnClickListener(v -> runTask("BACA DAFTAR WAN", () -> doReadWan(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
         bWanAdd.setOnClickListener(v -> showWanDialog(null));
-        bWanEdit.setOnClickListener(v -> runTask(() -> pickWanForEdit(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
-        bWanDel.setOnClickListener(v -> runTask(() -> pickWanForDelete(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
+        bWanEdit.setOnClickListener(v -> runTask("EDIT WAN", () -> pickWanForEdit(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
+        bWanDel.setOnClickListener(v -> runTask("HAPUS WAN", () -> pickWanForDelete(), bPre, bWanList, bWanAdd, bWanEdit, bWanDel));
 
         root.addView(main);
         return root;
@@ -464,13 +495,37 @@ public class MainActivity extends Activity {
 
     private interface Work { void run(); }
 
-    private void runTask(Work w, final Button... buttons) {
+    private void setStatus(String s) {
+        runOnUiThread(() -> { if (tvStatus != null) tvStatus.setText(s); });
+    }
+
+    private void copyLog() {
+        try {
+            android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            if (cm != null && tvLog != null) {
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("log", tvLog.getText().toString()));
+                log("log disalin ke clipboard");
+            }
+        } catch (Exception e) { log("gagal salin log: " + e); }
+    }
+
+    private void runTask(String label, Work w, final Button... buttons) {
         for (Button b : buttons) b.setEnabled(false);
+        setStatus("\u23F3 " + label + " ...");
+        log("\u25B6 " + label);
         io.execute(() -> {
-            log("...melakukan request...");
-            try { w.run(); }
-            catch (Exception e) { log("ERROR: " + e); }
-            finally { runOnUiThread(() -> { for (Button b : buttons) b.setEnabled(true); log("<< selesai"); }); }
+            try {
+                w.run();
+                setStatus("\u2705 " + label + " selesai");
+            } catch (Exception e) {
+                log("ERROR: " + e);
+                setStatus("\u274C " + label + " gagal: " + e);
+            } finally {
+                runOnUiThread(() -> {
+                    for (Button b : buttons) b.setEnabled(true);
+                    log("<< selesai");
+                });
+            }
         });
     }
 
@@ -540,7 +595,7 @@ public class MainActivity extends Activity {
                     + "&loginpd=" + sb + "&port=0&sessionid=" + sessionid + "&_=" + (System.currentTimeMillis() % 1000000000);
             String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
             saveOntCredentials();
-            if (resp.contains("\"login_result\":0")) {
+            if (resp.replace(" ", "").contains("\"login_result\":0")) {
                 ontSessionId = sessionid;
                 log("login web UI ONT: OK");
                 return sessionid;
@@ -558,13 +613,25 @@ public class MainActivity extends Activity {
         return m.find() ? m.group(1) : null;
     }
 
+    private static String bodyOf(String resp) {
+        if (resp == null) return "";
+        int nl = resp.indexOf('\n');
+        return nl >= 0 ? resp.substring(nl + 1) : resp;
+    }
+
+    /** POST CGI persis XHR.post asli: refresh sessionid dulu, lalu kirim body form-urlencoded. */
     private String ontCgi(String ajaxmethod, String params) {
         String ip = ontIp();
+        try {
+            String r = httpRequest("GET", "http://" + ip + "/cgi-bin/ajax?ajaxmethod=get_refresh_sessionid&_=" + (System.currentTimeMillis() % 1000000000), null);
+            String s = jsonValue(r, "sessionid");
+            if (s != null && !s.isEmpty()) ontSessionId = s;
+        } catch (Exception ignored) { }
         String body = "ajaxmethod=" + ajaxmethod
                 + (params == null || params.isEmpty() ? "" : "&" + params)
                 + (ontSessionId == null ? "" : "&sessionid=" + ontSessionId)
                 + "&_=" + (System.currentTimeMillis() % 1000000000);
-        return httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
+        return bodyOf(httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body));
     }
 
     private static final int REQ_CONFIG = 1001;
@@ -1104,30 +1171,37 @@ public class MainActivity extends Activity {
         String pass = telnetPassword();
         log("password telnet : " + pass);
         try (java.net.Socket sock = new java.net.Socket()) {
-            sock.connect(new java.net.InetSocketAddress(ip, 23), 5000);
+            log("1/6  menyambung telnet " + ip + ":23 ...");
+            sock.connect(new java.net.InetSocketAddress(ip, 23), 4000);
             sock.setSoTimeout(15000);
             Telnet t = new Telnet(sock);
-            t.readUntil("ogin:", 10000);
+
+            String s1 = t.readUntil("ogin:", 6000);
+            log("2/6  prompt login   : " + oneLine(s1));
             t.send("gpon\r\n");
-            log("login           : gpon");
-            t.readUntil("assword:", 10000);
+
+            String s2 = t.readUntil("assword:", 6000);
+            log("3/6  prompt password: " + oneLine(s2));
             t.send(pass + "\r\n");
-            log("password        : terkirim");
-            t.readUntil("user>", 10000);
+
+            String s3 = t.readUntil("user>", 6000);
+            log("4/6  setelah login  : " + oneLine(s3));
             t.send("en\r\n");
-            log("> en");
-            String afterEn = t.readUntil("config#", 10000);
-            if (afterEn.toLowerCase().contains("assword")) {
+
+            String s4 = t.readUntil("config#", 6000);
+            if (s4.toLowerCase().contains("assword")) {
                 t.send(pass + "\r\n");
-                t.readUntil("config#", 10000);
+                s4 = t.readUntil("config#", 6000);
             }
-            log("mode            : config#");
+            log("5/6  prompt config  : " + oneLine(s4));
+
             t.send("cd factorydir\r\n");
-            t.readUntil("factorydir#", 10000);
-            log("> cd factorydir");
+            String s5 = t.readUntil("factorydir#", 6000);
+            log("     cd factorydir  : " + oneLine(s5));
+
             t.send("load preconfig IDN_XL\r\n");
-            log("> load preconfig IDN_XL");
-            String out = t.readAll(20000);
+            log("6/6  menunggu hasil load preconfig ...");
+            String out = t.readAll(15000);
             for (String line : out.split("\n")) {
                 String s = line.replace("\r", "").trim();
                 if (!s.isEmpty()) log("    " + s);
@@ -1139,8 +1213,15 @@ public class MainActivity extends Activity {
                     : "=== SELESAI: cek output di atas ===");
         } catch (Exception e) {
             log("ADD WAN GAGAL: " + e);
-            log("Pastikan telnet aktif & HP satu jaringan dengan ONT.");
+            log("Pastikan telnet aktif (port 23) & HP satu jaringan dengan ONT.");
         }
+    }
+
+    private static String oneLine(String s) {
+        if (s == null) return "(kosong)";
+        String x = s.replace("\r", " ").replace("\n", " ").trim();
+        if (x.isEmpty()) return "(kosong)";
+        return x.length() > 120 ? x.substring(0, 120) + "..." : x;
     }
 
     private String enc(String s) {
@@ -1150,9 +1231,20 @@ public class MainActivity extends Activity {
 
     private org.json.JSONArray wanArray() {
         String resp = ontCgi("get_allwan_info", null);
-        if (resp == null) return null;
-        try { return new org.json.JSONObject(resp).optJSONArray("wan"); }
-        catch (Exception e) { log("parse WAN gagal: " + e); log("respons: " + resp); return null; }
+        if (resp == null || resp.isEmpty()) { log("respons kosong dari get_allwan_info"); return null; }
+        try {
+            org.json.JSONObject o = new org.json.JSONObject(resp);
+            if (o.optInt("session_valid", 1) == 0) {
+                log("ONT menolak sesi (session_valid=0) - login ulang...");
+                ontSessionId = null;
+                if (ontLogin() == null) return null;
+                resp = ontCgi("get_allwan_info", null);
+                o = new org.json.JSONObject(resp);
+            }
+            org.json.JSONArray arr = o.optJSONArray("wan");
+            if (arr == null) { log("respons tanpa array 'wan': " + resp); return null; }
+            return arr;
+        } catch (Exception e) { log("parse WAN gagal: " + e); log("respons: " + resp); return null; }
     }
 
     private void doReadWan() {
@@ -1162,8 +1254,13 @@ public class MainActivity extends Activity {
         log("respons: " + (resp == null ? "null" : (resp.length() > 1500 ? resp.substring(0, 1500) + "..." : resp)));
         try {
             org.json.JSONObject o = new org.json.JSONObject(resp);
+            if (o.optInt("session_valid", 1) == 0) {
+                log("sesi ditolak ONT (session_valid=0). Cek username/password web UI.");
+                return;
+            }
             org.json.JSONArray arr = o.optJSONArray("wan");
             if (arr == null) { log("tidak ada array 'wan'"); return; }
+            if (arr.length() == 0) log("(belum ada WAN terdaftar)");
             for (int i = 0; i < arr.length(); i++) {
                 org.json.JSONObject w = arr.getJSONObject(i);
                 log(String.format("[%d] %s | %s | %s | VLAN %s | NAT %s | Enable %s",

@@ -6,15 +6,15 @@ Aplikasi Android all-in-one untuk teknisi ISP / installer jaringan yang mengelol
 
 ## Download
 
-**Rilis terbaru: v2.15**
-https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.15
+**Rilis terbaru: v2.16**
+https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.16
 
 | File | Isi |
 |---|---|
-| `Add_WAN_FH_Mobile.apk` | APK Android (versionCode 16 / v2.15) |
+| `Add_WAN_FH_Mobile.apk` | APK Android (versionCode 17 / v2.16) |
 | `Add_WAN_FH.exe` | Aplikasi Windows asli (arsip, tidak diubah) |
 
-APK SHA256: `9120B9CCE79C0BE321730CAFCF89C7D1A1B426FAB73EAC16AC156C0C3965AEB2` (1.113.137 byte)
+APK SHA256: `C7B34805A0BF090969129759F8BEEED090B8C8D0EABE55C70CA60F2426462D5B` (1.114.255 byte)
 
 ## Fitur
 
@@ -32,7 +32,7 @@ APK SHA256: `9120B9CCE79C0BE321730CAFCF89C7D1A1B426FAB73EAC16AC156C0C3965AEB2` (
 - **ENCRYPT CONFIG** — buat file config terenkripsi dari teks untuk upload kembali ke ONT (Local Upgrade)
 - **ENCRYPT/DECRYPT STRING** — AES-ECB satu per satu (key `ABCDEFGHIJKLMNOP`)
 - **PASTE MAC** — isi MAC dari clipboard terformat otomatis
-- **LOG auto-scroll**
+- **LOG di atas + auto-scroll + tombol SALIN** — output selalu terlihat, status bar menunjukkan aksi yang sedang berjalan
 - **Donasi optional** — link donasi Daffiyanet + subscribe YouTube (tidak mengunci fitur apa pun)
 
 ## Kebutuhan
@@ -63,7 +63,7 @@ cd android-gradle
 | `android-gradle/` | Proyek Gradle/AGP (build resmi, AGP 9.1.1) |
 | `windows/Add_WAN_FH.exe` | Aplikasi Windows asli (Delphi/VCL, tidak diubah) |
 | `termux/` | Termux toolkit Python (alternatif tanpa install APK) |
-| `docs/` | Dokumentasi teknis + [`TEST-REPORT-v2.15.md`](docs/TEST-REPORT-v2.15.md) |
+| `docs/` | Dokumentasi teknis + [`TEST-REPORT-v2.16.md`](docs/TEST-REPORT-v2.16.md) |
 
 ## Aplikasi Windows asli
 

@@ -2,6 +2,19 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.16] - 2026-11-20
+
+### Diperbaiki
+- **Output tidak terlihat** - kartu log dipindah ke atas (tepat di bawah header), ditambah status bar `⏳/✅/❌` dan tombol **SALIN** log.
+- **JSON WAN selalu gagal parse** - `httpRequest` menempelkan kode HTTP di depan body; ditambahkan `bodyOf()` untuk membuangnya sebelum `new JSONObject(...)`.
+- **session_valid:0** - `ontCgi` sekarang memanggil `get_refresh_sessionid` dan memakai sessionid baru, sama seperti `XHR.post` asli ONT.
+- **Login tahan spasi** - `"login_result": 0` kini dikenali.
+- **ADD WAN terlihat macet** - log progres `1/6` … `6/6` per langkah telnet, timeout 6 detik per langkah.
+- Login ulang otomatis sekali bila ONT membalas `session_valid:0`.
+
+### Ditambahkan
+- `docs/TEST-REPORT-v2.16.md` - temuan bug, perbaikan, dan bukti tes protokol 7/7 lulus terhadap server ONT tiruan.
+
 ## [v2.15] - 2026-11-20
 
 ### Ditambahkan
