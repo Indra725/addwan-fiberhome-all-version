@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.14] - 2026-11-19
+
+### Ditambahkan
+- **Tombol "6. BACA CONFIG (file ONT)"** - pilih file backup `usrconfig_conf` (dari web UI ONT), app dekripsi: XOR `0x2537` -> gunzip -> untar -> tampilkan config di log. Nilai terenkripsi AES-ECB (WiFi/TR-069) otomatis dideteksi dan diannotasi `=> [AES] ...` di baris yang sama.
+- Rilis **v2.8** (`versionCode=9`, SHA256 `81561032...`, 1.100.517 byte).
+
 ## [v2.13] - 2026-11-19
 
 ### Ditambahkan

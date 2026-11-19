@@ -222,6 +222,7 @@ public class MainActivity extends Activity {
         Button bStatus = act("3.  STATUS UPLINK", 0xFF15803D);
         Button bSet = act("4.  SET UPLINK", 0xFF7C3AED);
         Button bAcl = act("5.  AKTIFKAN ACL (buka web UI)", 0xFF1E40AF);
+        Button bCfg = act("6.  BACA CONFIG (file ONT)", 0xFFB45309);
         c.addView(bCheck);
         c.addView(bUnlock);
         c.addView(bStatus);
@@ -239,6 +240,7 @@ public class MainActivity extends Activity {
         rowSet.addView(bSet, lp(0, 1f, dp(8), 0, 0, 0));
         c.addView(rowSet);
         c.addView(bAcl);
+        c.addView(bCfg);
         main.addView(c);
 
         // ===== CARD: LOG =====
@@ -336,6 +338,7 @@ public class MainActivity extends Activity {
             startActivity(i);
             log("Membuka web UI ONT di http://" + ip + "\nSecurity > ACL Settings → Enable, isi IP, Save.");
         });
+        bCfg.setOnClickListener(v -> pickConfigFile());
 
         root.addView(main);
         return root;
@@ -362,6 +365,153 @@ public class MainActivity extends Activity {
     }
 
     // ════════════════════════ LOGIKA ════════════════════════
+
+    private static final int REQ_CONFIG = 1001;
+
+    private void pickConfigFile() {
+        Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        intent.setType("*/*");
+        intent.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(intent, REQ_CONFIG);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode != REQ_CONFIG || resultCode != RESULT_OK || data == null || data.getData() == null) return;
+        try {
+            java.io.InputStream is = getContentResolver().openInputStream(data.getData());
+            if (is == null) { log("ERROR: tidak bisa membaca file"); return; }
+            byte[] bytes = readAllBytes(is);
+            is.close();
+            io.execute(() -> decryptAndShowConfig(bytes));
+        } catch (Exception e) {
+            log("ERROR membaca file: " + e);
+        }
+    }
+
+    private byte[] xorTransform(byte[] data, int key) {
+        int size = data.length;
+        int sizeDivKey = size / key;
+        byte[] out = new byte[size];
+        for (int i = 0; i < size; i++) {
+            out[i] = (byte) (data[i] ^ ((size + key + i - sizeDivKey) & 0xFF));
+        }
+        return out;
+    }
+
+    private byte[] gunzip(byte[] data) throws java.io.IOException {
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        try (java.util.zip.GZIPInputStream gis = new java.util.zip.GZIPInputStream(new java.io.ByteArrayInputStream(data))) {
+            byte[] tmp = new byte[4096];
+            int n;
+            while ((n = gis.read(tmp)) != -1) bos.write(tmp, 0, n);
+        }
+        return bos.toByteArray();
+    }
+
+    private String untarUsrconfig(byte[] data) {
+        long offset = 0;
+        while (offset + 512 <= data.length) {
+            StringBuilder name = new StringBuilder();
+            for (int i = 0; i < 100 && data[(int) offset + i] != 0; i++) name.append((char) (data[(int) offset + i] & 0xFF));
+            if (name.length() == 0) return null;
+            int size = 0;
+            for (int i = 124; i < 136 && data[(int) offset + i] != 0; i++) {
+                char c = (char) (data[(int) offset + i] & 0xFF);
+                if (c >= '0' && c <= '7') size = size * 8 + (c - '0');
+            }
+            if (name.toString().equals("usrconfig_conf") || name.toString().endsWith("/usrconfig_conf")) {
+                return new String(data, (int) offset + 512, size, java.nio.charset.StandardCharsets.UTF_8);
+            }
+            long blocks = (size + 511) / 512;
+            offset += 512 + blocks * 512;
+        }
+        return null;
+    }
+
+    private String aesDecryptHex(String hex) {
+        try {
+            javax.crypto.Cipher c = javax.crypto.Cipher.getInstance("AES/ECB/NoPadding");
+            byte[] key = "ABCDEFGHIJKLMNOP".getBytes("ASCII");
+            c.init(javax.crypto.Cipher.DECRYPT_MODE, new javax.crypto.spec.SecretKeySpec(key, "AES"));
+            byte[] out = c.doFinal(hexStringToBytes(hex));
+            int end = out.length;
+            while (end > 0 && out[end - 1] == 0) end--;
+            if (end == 0) return null;
+            for (int i = 0; i < end; i++) {
+                int b = out[i] & 0xFF;
+                if (b < 32 || b > 126) return null;
+            }
+            return new String(out, 0, end, "UTF-8");
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private byte[] hexStringToBytes(String s) {
+        int len = s.length();
+        byte[] out = new byte[len / 2];
+        for (int i = 0; i < len; i += 2) out[i / 2] = (byte) Integer.parseInt(s.substring(i, i + 2), 16);
+        return out;
+    }
+
+    private String annotateHexValues(String line) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("([0-9A-F]{32,64})").matcher(line);
+        StringBuffer sb = new StringBuffer();
+        boolean found = false;
+        while (m.find()) {
+            String hex = m.group(1);
+            String dec = aesDecryptHex(hex);
+            if (dec != null) {
+                m.appendReplacement(sb, hex + "  =>  [AES] " + Matcher_quote(dec));
+                found = true;
+            }
+        }
+        if (!found) return null;
+        m.appendTail(sb);
+        return sb.toString();
+    }
+
+    private static String Matcher_quote(String s) {
+        return java.util.regex.Matcher.quoteReplacement(s);
+    }
+
+    private void decryptAndShowConfig(byte[] bytes) {
+        log("=== BACA CONFIG ===");
+        log("file: " + bytes.length + " bytes");
+        byte[] d = xorTransform(bytes, 0x2537);
+        if (d.length >= 2 && (d[0] & 0xFF) == 0x1F && (d[1] & 0xFF) == 0x8B) {
+            try {
+                d = gunzip(d);
+                log("gzip: OK");
+            } catch (Exception e) {
+                log("gzip ERR: " + e);
+                return;
+            }
+        } else {
+            log("bukan gzip, coba parse langsung");
+        }
+        String text;
+        if (d.length > 262 && d[257] == 'u' && d[258] == 's' && d[259] == 't' && d[260] == 'a' && d[261] == 'r') {
+            text = untarUsrconfig(d);
+            if (text == null) { log("usrconfig_conf tidak ditemukan dalam archive"); return; }
+            log("isi: usrconfig_conf (" + text.split("\n").length + " baris)");
+        } else {
+            try {
+                text = new String(d, "UTF-8");
+            } catch (java.io.UnsupportedEncodingException e) {
+                text = new String(d, java.nio.charset.StandardCharsets.UTF_8);
+            }
+            log("isi: file tunggal (" + text.split("\n").length + " baris)");
+        }
+        log("");
+        for (String line : text.split("\n")) {
+            String ann = annotateHexValues(line);
+            log(ann != null ? ann : line);
+        }
+        log("=== SELESAI ===");
+    }
 
     private String phoneIp() {
         try {
