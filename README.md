@@ -66,7 +66,10 @@ Get-FileHash .\Add_WAN_FH.exe -Algorithm SHA256
 
 Kalau repo ini bermanfaat buat pekerjaan Anda, boleh dukung pengembangan & maintenance Daffiyanet:
 
-- **08516163719** a/n Daffiyanet (QRIS / transfer)
+- **Halaman donasi:** https://indra725.github.io/donasi/
+- **QRIS:** scan dari semua e-wallet / m-banking (DAFFIYANET, Konter — NMID ID1025401523762)
+- **E-Wallet (DANA / GoPay / OVO / ShopeePay):** **08516163719** a.n. **Daffiyanet**
+- **WhatsApp:** [wa.me/628516163719](https://wa.me/628516163719)
 
 ## Lapor masalah
 
