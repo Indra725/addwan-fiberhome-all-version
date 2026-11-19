@@ -2,9 +2,14 @@ package com.daffiyanet.addwan;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.graphics.Color;
 import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
+import android.os.Build;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -23,13 +28,11 @@ import java.net.Socket;
 import java.net.URLEncoder;
 import java.net.HttpURLConnection;
 import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
- * Add WAN FH Mobile -------- unlock Fiberhome HG6145F1/D2 (RP4423) & set uplink via HP.
+ * Add WAN FH Mobile v2.3 — unlock Fiberhome HG6145F1/D2 (RP4423) & set uplink via HP.
  * Tool ini BUKAN produk resmi Fiberhome; gunakan hanya pada perangkat milik Anda.
  */
 public class MainActivity extends Activity {
@@ -38,75 +41,138 @@ public class MainActivity extends Activity {
     private Spinner spPort;
     private final ExecutorService io = Executors.newSingleThreadExecutor();
 
+    private static final int BG          = 0xFF070B1A;
+    private static final int CARD        = 0xFF111831;
+    private static final int CARD_STROKE = 0xFF26304E;
+    private static final int INPUT_BG    = 0xFF0D1430;
+    private static final int INPUT_STR   = 0xFF2F4B7C;
+    private static final int GOLD        = 0xFFFFD54A;
+    private static final int MINT        = 0xFF7CFFC4;
+    private static final int TEXT        = 0xFFE8F6FF;
+    private static final int MUTED       = 0xFF8E94B8;
+    private static final int CYAN        = 0xFF00E5FF;
+    private static final int AMBER       = 0xFFF59E0B;
+    private static final int GREEN       = 0xFF22C55E;
+    private static final int PURPLE      = 0xFF8B5CF6;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(buildUi());
     }
 
-    private LinearLayout col() {
-        LinearLayout l = new LinearLayout(this);
-        l.setOrientation(LinearLayout.VERTICAL);
-        int pad = dp(16);
-        l.setPadding(pad, pad, pad, pad);
-        return l;
-    }
-
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
+
+    private GradientDrawable round(int fill, int stroke, int radiusDp, int strokeWDp) {
+        GradientDrawable d = new GradientDrawable();
+        d.setShape(GradientDrawable.RECTANGLE);
+        d.setCornerRadius(dp(radiusDp));
+        d.setColor(fill);
+        if (stroke != 0 && strokeWDp > 0) d.setStroke(dp(strokeWDp), stroke);
+        return d;
+    }
 
     private TextView label(String s, boolean small, int padTop) {
         TextView t = new TextView(this);
-        t.setText(s);
-        t.setTextSize(small ? 11 : 13);
-        t.setTextColor(small ? 0xFF9DA5C8 : 0xFFFFFFFF);
-        t.setPadding(0, padTop, 0, dp(4));
+        t.setText(s.toUpperCase());
+        t.setTextSize(small ? 10 : 12);
+        t.setLetterSpacing(0.14f);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTextColor(GOLD);
+        t.setPadding(0, padTop, 0, dp(5));
         return t;
+    }
+
+    private EditText field(String hint, String initial) {
+        EditText e = new EditText(this);
+        e.setHint(hint);
+        e.setHintTextColor(0xFF5F7694);
+        e.setTextColor(TEXT);
+        e.setTextSize(15);
+        e.setSingleLine(true);
+        e.setPadding(dp(14), dp(11), dp(14), dp(11));
+        e.setBackground(round(INPUT_BG, INPUT_STR, 12, 1));
+        if (initial != null) e.setText(initial);
+        return e;
+    }
+
+    private Button actionBtn(String text, int bg) {
+        Button b = new Button(this);
+        b.setText(text);
+        b.setAllCaps(false);
+        b.setTextSize(13);
+        b.setTypeface(Typeface.DEFAULT_BOLD);
+        b.setLetterSpacing(0.06f);
+        b.setTextColor(0xFFFFFFFF);
+        b.setMinHeight(dp(50));
+        b.setBackground(round(bg, 0, 14, 0));
+        b.setPadding(dp(8), 0, dp(8), 0);
+        return b;
     }
 
     private View buildUi() {
         ScrollView root = new ScrollView(this);
         root.setFillViewport(true);
-        LinearLayout main = col();
-        main.setBackgroundColor(0xFF050718);
+        root.setBackgroundColor(BG);
+
+        LinearLayout main = new LinearLayout(this);
+        main.setOrientation(LinearLayout.VERTICAL);
+        int pad = dp(16);
+        main.setPadding(pad, dp(10), pad, dp(16));
+        main.setBackgroundColor(BG);
+
+        // ===== HEADER =====
+        LinearLayout header = new LinearLayout(this);
+        header.setOrientation(LinearLayout.VERTICAL);
+        header.setPadding(0, dp(4), 0, dp(12));
 
         TextView title = new TextView(this);
-        title.setText("------ ADD WAN FH");
-        title.setTextSize(26);
+        title.setText("⚡ ADD WAN FH");
+        title.setTextSize(30);
         title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setTextColor(0xFFFFD700);
-        title.setPadding(0, dp(4), 0, dp(2));
-        main.addView(title);
-        main.addView(label("Unlock Fiberhome HG6145F1/D2 & set uplink dari HP. HP harus satu jaringan/WiFi dengan ONT.", true, 0));
+        title.setTextColor(GOLD);
+        title.setShadowLayer(dp(8), 0, 0, 0x80FFD54A);
+        header.addView(title);
 
-        main.addView(label("IP ONT", false, dp(8)));
-        etIp = new EditText(this);
-        etIp.setText("192.168.1.1");
-        etIp.setTextColor(0xFF00E5FF);
-        etIp.setTextSize(15);
-        etIp.setSingleLine(true);
-        main.addView(etIp);
+        TextView sub = new TextView(this);
+        sub.setText("Unlock HG6145F1/D2  ·  Set uplink  ·  via HP");
+        sub.setTextSize(12);
+        sub.setTextColor(MUTED);
+        sub.setPadding(0, dp(2), 0, 0);
+        header.addView(sub);
 
-        main.addView(label("MAC ONT (dari label belakang)", false, dp(10)));
-        etMac = new EditText(this);
-        etMac.setHint("94:6B:12:AB:CD:EF");
-        etMac.setHintTextColor(0xFF5E6794);
-        etMac.setTextColor(0xFFFFFFFF);
-        etMac.setTextSize(15);
-        etMac.setSingleLine(true);
-        etMac.setInputType(0x00000001 | 0x00001000); // text | cap characters
-        main.addView(etMac);
+        main.addView(header);
 
+        // ===== CARD: KONEKSI ONT =====
+        LinearLayout card1 = card();
+        main.addView(card1);
+
+        card1.addView(label("Koneksi ONT", true, dp(0)));
+
+        card1.addView(label("IP ONT", false, dp(8)));
+        etIp = field("192.168.1.1", "192.168.1.1");
+        etIp.setTextColor(CYAN);
+        card1.addView(etIp);
+
+        card1.addView(label("MAC ONT (label belakang)", false, dp(14)));
+        etMac = field("94:6B:12:AB:CD:EF", null);
+        etMac.setTextColor(GOLD);
+        etMac.setInputType(0x00000001 | 0x00001000 | 0x00000080); // text | cap characters
+        card1.addView(etMac);
+
+        // ===== BUTTONS =====
         LinearLayout row1 = new LinearLayout(this);
         row1.setOrientation(LinearLayout.HORIZONTAL);
-        row1.setPadding(0, dp(12), 0, 0);
-        Button bCheck = mkBtn("1. CEK ONT", 0xFF12324A, 0xFFFFFFFF);
-        Button bUnlock = mkBtn("2. UNLOCK", 0xFF8A5A00, 0xFFFFFFFF);
-        row1.addView(bCheck, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        row1.addView(bUnlock, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        main.addView(row1);
+        row1.setPadding(0, dp(14), 0, 0);
+        Button bCheck = actionBtn("1. CEK ONT", 0xFF0891B2);
+        Button bUnlock = actionBtn("2. UNLOCK", AMBER);
+        row1.addView(bCheck, lp(0, 1f, 0, 0, 0, 0));
+        row1.addView(bUnlock, lp(0, 1f, dp(8), 0, 0, 0));
+        card1.addView(row1);
 
-        Button bStatus = mkBtn("3. STATUS UPLINK (get_uplink_info)", 0xFF0B3B2E, 0xFFFFFFFF);
-        main.addView(bStatus);
+        Button bStatus = actionBtn("3. STATUS UPLINK", 0xFF15803D);
+        bStatus.setLayoutParams(lp(ViewGroup.LayoutParams.MATCH_PARENT, 0f, 0, dp(8), 0, 0));
+        card1.addView(bStatus);
 
         LinearLayout row3 = new LinearLayout(this);
         row3.setOrientation(LinearLayout.HORIZONTAL);
@@ -116,26 +182,55 @@ public class MainActivity extends Activity {
         ArrayAdapter<String> ad = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ports);
         ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spPort.setAdapter(ad);
-        Button bSet = mkBtn("4. SET UPLINK", 0xFF3B1257, 0xFFFFFFFF);
-        LinearLayout.LayoutParams spLp = new LinearLayout.LayoutParams(dp(120), LinearLayout.LayoutParams.WRAP_CONTENT);
-        row3.addView(spPort, spLp);
-        row3.addView(bSet, new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f));
-        main.addView(row3);
+        spPort.setBackground(round(INPUT_BG, INPUT_STR, 12, 1));
+        spPort.setPadding(dp(10), 0, dp(10), 0);
+        Button bSet = actionBtn("4. SET UPLINK", PURPLE);
+        row3.addView(spPort, new LinearLayout.LayoutParams(dp(118), LinearLayout.LayoutParams.WRAP_CONTENT));
+        row3.addView(bSet, lp(0, 1f, dp(8), 0, 0, 0));
+        card1.addView(row3);
 
-        main.addView(label("Log:", false, dp(10)));
+        // ===== CARD: LOG =====
+        LinearLayout card2 = card();
+        main.addView(card2);
+
+        LinearLayout logHeader = new LinearLayout(this);
+        logHeader.setOrientation(LinearLayout.HORIZONTAL);
+        logHeader.setGravity(Gravity.CENTER_VERTICAL);
+        logHeader.setPadding(0, dp(2), 0, dp(8));
+        TextView dot = new TextView(this);
+        dot.setText("● ● ●");
+        dot.setTextSize(10);
+        dot.setTextColor(0xFFFF5C57);
+        logHeader.addView(dot);
+        TextView logTitle = new TextView(this);
+        logTitle.setText("  output");
+        logTitle.setTextColor(MINT);
+        logTitle.setTypeface(Typeface.MONOSPACE);
+        logTitle.setTextSize(12);
+        logHeader.addView(logTitle);
+        card2.addView(logHeader);
+
         tvLog = new TextView(this);
-        tvLog.setTextSize(11);
+        tvLog.setTextSize(10);
         tvLog.setTypeface(Typeface.MONOSPACE);
-        tvLog.setTextColor(0xFF9FFFD0);
-        tvLog.setBackgroundColor(0xFF000000);
-        tvLog.setPadding(dp(10), dp(10), dp(10), dp(10));
-        tvLog.setText("Siap. Sambungkan HP ke WiFi/LAN ONT, isi MAC, lalu tekan CEK ONT.\n");
+        tvLog.setTextColor(MINT);
+        tvLog.setBackgroundColor(0xFF05070F);
+        tvLog.setPadding(dp(12), dp(10), dp(12), dp(10));
+        tvLog.setText("Siap. Sambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
+        tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
         ScrollView logScroll = new ScrollView(this);
         logScroll.addView(tvLog);
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f);
-        logScroll.setLayoutParams(lp);
-        main.addView(logScroll, lp);
+        LinearLayout.LayoutParams lpLog = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(160));
+        logScroll.setLayoutParams(lpLog);
+        card2.addView(logScroll);
+
+        TextView footer = new TextView(this);
+        footer.setText("github.com/Indra725/addwan-fiberhome-all-version · BUKAN produk resmi Fiberhome");
+        footer.setTextColor(0xFF4A5180);
+        footer.setTextSize(10);
+        footer.setPadding(0, dp(10), 0, 0);
+        main.addView(footer);
 
         bCheck.setOnClickListener(v -> runTask(this::doCheckOnt, bCheck, bUnlock, bStatus, bSet));
         bUnlock.setOnClickListener(v -> runTask(this::doUnlock, bCheck, bUnlock, bStatus, bSet));
@@ -144,7 +239,7 @@ public class MainActivity extends Activity {
                 .setTitle("Set uplink?")
                 .setMessage("Uplink WAN akan memakai port LAN " + spPort.getSelectedItem() + ".\n\n"
                         + "HP harus satu jaringan dengan ONT. Lanjutkan?")
-                .setPositiveButton("Ya, SET", (d, w) -> runTask(() -> doSetUplink(), bCheck, bUnlock, bStatus, bSet))
+                .setPositiveButton("Ya, SET", (d, w) -> runTask(this::doSetUplink, bCheck, bUnlock, bStatus, bSet))
                 .setNegativeButton("Batal", null)
                 .show());
 
@@ -152,15 +247,22 @@ public class MainActivity extends Activity {
         return root;
     }
 
-    private Button mkBtn(String text, int bg, int fg) {
-        Button b = new Button(this);
-        b.setText(text);
-        b.setAllCaps(false);
-        b.setTextSize(12);
-        b.setBackgroundColor(bg);
-        b.setTextColor(fg);
-        b.setPadding(dp(4), dp(10), dp(4), dp(10));
-        return b;
+    private LinearLayout.LayoutParams lp(int w, float wt, int pl, int pt, int pr, int pb) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(w, LinearLayout.LayoutParams.WRAP_CONTENT, wt);
+        lp.setMargins(pl, pt, pr, pb);
+        return lp;
+    }
+
+    private LinearLayout card() {
+        LinearLayout c = new LinearLayout(this);
+        c.setOrientation(LinearLayout.VERTICAL);
+        c.setBackground(round(CARD, CARD_STROKE, 18, 1));
+        c.setPadding(dp(16), dp(14), dp(16), dp(16));
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, 0, dp(12));
+        c.setLayoutParams(lp);
+        return c;
     }
 
     private interface Work { void run(); }
@@ -216,13 +318,11 @@ public class MainActivity extends Activity {
     private void doCheckOnt() {
         String ip = ontIp();
         log("=== CEK ONT " + ip + " ===");
-        // ping
         try {
             Process p = Runtime.getRuntime().exec(new String[]{"ping", "-c1", "-W1", ip});
             boolean ok = p.waitFor(4, java.util.concurrent.TimeUnit.SECONDS) && p.exitValue() == 0;
             log("ping        : " + (ok ? "OK" : "GAGAL (lanjut cek port)"));
         } catch (Exception e) { log("ping        : " + e); }
-        // TCP 23 / 80
         for (int[] pr : new int[][]{{23, 0}, {80, 0}}) {
             try (Socket s = new Socket()) {
                 s.connect(new java.net.InetSocketAddress(ip, pr[0]), 2000);
@@ -231,7 +331,6 @@ public class MainActivity extends Activity {
                 log("TCP " + pr[0] + "       : tutup");
             }
         }
-        // HTTP login page
         String login = httpRequest("GET", "http://" + ip + "/html/login_inter.html", null);
         log("login page  : HTTP " + login.split("\n", 2)[0] + " (" + login.length() + " bytes)");
         String logo = httpRequest("GET", "http://" + ip + "/image/logo_Intelbras_fiberhome.png", null);
@@ -374,7 +473,7 @@ public class MainActivity extends Activity {
                 if (b == 255) {
                     int nxt = (i + 1 < d.length) ? (d[i + 1] & 0xFF) : -1;
                     if (nxt == 255) { sb.append((char) 183); i += 2; continue; }
-                    if (nxt == 250) { // SB ... SE
+                    if (nxt == 250) {
                         int j = i + 2;
                         while (j + 1 < d.length && !((d[j] & 0xFF) == 255 && (d[j + 1] & 0xFF) == 240)) j++;
                         i = j + 2; continue;
@@ -494,4 +593,3 @@ public class MainActivity extends Activity {
         return bos.toByteArray();
     }
 }
-

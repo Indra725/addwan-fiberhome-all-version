@@ -2,12 +2,19 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.9] - 2026-11-19
+
+### Diperbaiki
+- **UI Add_WAN_FH_Mobile v2.3** - redesign total: tema Holo gelap, kartu rounded dengan border, header gold + subtitle, input dengan kontras tinggi (teks IP/MAC terlihat jelas - sebelumnya teks tidak terlihat karena tema light dipakai di background gelap), tombol bergaya penuh warna (CEK=cyan, UNLOCK=amber, STATUS=hijau, SET=ungu), paket log terminal-style.
+- `android-gradle/`: versionCode=4 / versionName=2.3, tema `Theme.Holo.NoActionBar`.
+- Rilis **v2.3** (SHA256 `D371BBD5...`, 1.095.241 byte). README/dokumen mengarah ke v2.3.
+
 ## [v2.8] - 2026-11-19
 
 ### Diperbaiki
 - **Add_WAN_FH_Mobile.apk di-rebuild sepenuhnya dengan Gradle/AGP** (AGP 9.1.1 + Gradle 9.3.1) - struktur APK identik dengan billing-daffiyanet.apk yang terbukti installable di HP Anda (res/arsc stored, dex deflate, pipeline resmi). Menggantikan build manual (aapt2/d8 + zip-recompress) yang gagal mengurai paket.
 - `android-gradle/` ditambahkan: proyek Gradle lengkap (gradlew, wrapper, AGP 9.1.1) - `gradlew.bat assembleRelease` untuk build ulang.
-- Rilis **v2.2** dibintangi. README/dokumen Termux diarahkan ke v2.2 (SHA256 `CF20F20F...`, 1.094.465 byte).
+- Rilis **v2.2** dibintangi. README/dokumen Termux diarahkan ke v2.2 (SHA256 `CF20F20F...`, 1.095.241 byte).
 
 ## [v2.7] - 2026-11-19
 
