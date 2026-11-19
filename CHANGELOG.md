@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.12] - 2026-11-19
+
+### Diperbaiki
+- Output log sekarang **bisa di-scroll** dan **otomatis lompat ke baris terbaru** setelah setiap perintah dijalankan (CEK/UNLOCK/STATUS/SET).
+- Rilis **v2.6** (`versionCode=7`, SHA256 `AD46B777...`, 1.096.919 byte).
+
 ## [v2.11] - 2026-11-19
 
 ### Diperbaiki

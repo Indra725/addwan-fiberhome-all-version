@@ -27,6 +27,7 @@ public class MainActivity extends Activity {
 
     private EditText etIp, etMac;
     private TextView tvLog;
+    private android.widget.ScrollView logScroll;
     private android.widget.Spinner spPort;
     private final java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newSingleThreadExecutor();
 
@@ -243,9 +244,11 @@ public class MainActivity extends Activity {
         tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
         tvLog.setText("Selamat datang di Add WAN FH.\nSambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
         ScrollView logScroll = new ScrollView(this);
+        logScroll.setPadding(0, 0, 0, 0);
         logScroll.addView(tvLog);
         logScroll.setLayoutParams(new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dp(150)));
+        this.logScroll = logScroll;
         c.addView(logScroll);
         main.addView(c);
 
@@ -333,7 +336,14 @@ public class MainActivity extends Activity {
         });
     }
 
-    private void log(String s) { runOnUiThread(() -> tvLog.append(s + "\n")); }
+    private void log(String s) {
+        runOnUiThread(() -> {
+            tvLog.append(s + "\n");
+            if (logScroll != null) {
+                logScroll.post(() -> logScroll.fullScroll(android.view.View.FOCUS_DOWN));
+            }
+        });
+    }
 
     // ════════════════════════ LOGIKA ════════════════════════
 

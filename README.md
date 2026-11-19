@@ -14,18 +14,18 @@ Tool teknisi ISP / installer jaringan untuk modem **Fiberhome ONU/ONT** (seri AN
 | Platform | Tool | Install | Root |
 |---|---|---|---|
 | Windows | `Add_WAN_FH.exe` (v1.0), `FiberhomeConfigUtility.exe` (v1.1) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases) | tidak perlu |
-| Android APK | `Add_WAN_FH_Mobile.apk` (v2.5) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.5) | tidak perlu |
+| Android APK | `Add_WAN_FH_Mobile.apk` (v2.6) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.6) | tidak perlu |
 | **Termux (HP)** | `termux/addwan.py` (v2.3) | `pkg install python git && git clone` (lihat di bawah) | **tidak perlu** |
 
-## Android APK (v2.5)
+## Android APK (v2.6)
 
-**Download:** https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.5 — `Add_WAN_FH_Mobile.apk` (1.0 MB)
+**Download:** https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.6 — `Add_WAN_FH_Mobile.apk` (1.0 MB)
 
 **Fitur:** CEK ONT (ping/TCP/custom webui) · UNLOCK via telnet + push custom-webui.sh dari HP (mini HTTP server internal) · STATUS & SET UPLINK (`get_uplink_info` / `set_uplink_info`)
 
 **Kebutuhan:** Android 4.1+, HP satu jaringan/WiFi/LAN dengan ONT, telnet aktif (`Security > ACL Settings`), firmware RP4423, backup config ONT dulu.
 
-**Verifikasi (v2.5):** `SHA256: BDB36AE8F583C88DC3D1052E46C49E8778EB7401CB1B5D7FC7842D0845B55212` (1.096.633 byte)
+**Verifikasi (v2.6):** `SHA256: AD46B777B3505D2AE5000659D2B6E1739C0FA08C8D2F3FC41590BC256BE88ECB` (1.096.919 byte)
 
 **Build dari source:** `cd android-gradle && .\gradlew.bat assembleRelease` (JDK 17+ & Android SDK)
 
@@ -52,8 +52,8 @@ Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH & utility Fiberhome. Bi
 
 | Versi | File | Tanggal | Rilis |
 |---|---|---|---|
-| v2.5 | Add_WAN_FH_Mobile.apk (UI fix: header tidak terpotong status bar) | 2026-11-19 | [releases/v2.5](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.5) |
-| v2.3 | `Add_WAN_FH_Mobile.apk` (UI redesign Holo gelap, versi Termux rilis di repo) | 2026-11-19 | [releases/v2.3](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.5) |
+| v2.5 | Add_WAN_FH_Mobile.apk (UI fix: header tidak terpotong status bar) | 2026-11-19 | [releases/v2.5](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.6) |
+| v2.3 | `Add_WAN_FH_Mobile.apk` (UI redesign Holo gelap, versi Termux rilis di repo) | 2026-11-19 | [releases/v2.3](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.6) |
 | v2.3 | `termux/addwan.py` + `termux/custom-webui.bin` (Local Upgrade web UI) | 2026-11-19 | (source di repo) |
 | v2.2 | `termux/addwan.py` (+ simulator test_mock.py) | 2026-11-19 | (source di repo) |
 | v2.1 | `termux/addwan.py` awal | 2026-11-19 | (source di repo) |
@@ -109,6 +109,7 @@ Tool adalah milik pembuat/distributor aslinya. Distribusi di repo ini atas izin 
 ## Lapor masalah
 
 Buka tab **Issues**. Sertakan: versi tool, firmware ONT, langkah reproduksi.
+
 
 
 
