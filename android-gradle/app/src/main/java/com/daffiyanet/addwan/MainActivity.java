@@ -20,7 +20,7 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 /**
- * Add WAN FH Mobile — v2.4
+ * Add WAN FH Mobile â€” v2.4
  * Tool ISP sendiri untuk HG6145F1/D2 pada perangkat yang Anda miliki / kelola.
  */
 public class MainActivity extends Activity {
@@ -143,7 +143,7 @@ public class MainActivity extends Activity {
 
         // ===== HEADER =====
         TextView badge = new TextView(this);
-        badge.setText("  ⚡ D A F F I Y A N E T  ");
+        badge.setText("  âš¡ D A F F I Y A N E T  ");
         badge.setTextColor(GOLD);
         badge.setTextSize(10);
         badge.setTypeface(Typeface.DEFAULT_BOLD);
@@ -156,7 +156,7 @@ public class MainActivity extends Activity {
         main.addView(badge);
 
         TextView title = new TextView(this);
-        title.setText("ADD WAN FH");
+        title.setText("ADD WAN FH + CONFIG");
         title.setTextSize(31);
         title.setTypeface(Typeface.DEFAULT_BOLD);
         title.setTextColor(GOLD);
@@ -164,7 +164,7 @@ public class MainActivity extends Activity {
         main.addView(title);
 
         TextView sub = new TextView(this);
-        sub.setText("Unlock & kelola HG6145F1 / HG6145D2 dari HP — tanpa PC, tanpa root.");
+        sub.setText("Unlock & kelola HG6145F1 / HG6145D2 dari HP â€” tanpa PC, tanpa root.");
         sub.setTextSize(12);
         sub.setTextColor(MUTED);
         sub.setPadding(0, dp(4), 0, dp(12));
@@ -246,7 +246,7 @@ public class MainActivity extends Activity {
         // ===== CARD: LOG =====
         c = card();
         TextView logHeader = new TextView(this);
-        logHeader.setText("● ● ●   output");
+        logHeader.setText("â— â— â—   output");
         logHeader.setTextSize(10);
         logHeader.setTypeface(Typeface.MONOSPACE);
         logHeader.setTextColor(0xFFFF5C5C);
@@ -272,7 +272,7 @@ public class MainActivity extends Activity {
 
         // ===== CARD: DONASI / COMMIT (opsional) =====
         c = card();
-        c.addView(sectionTitle("Dukung Daffiyanet — opsional"));
+        c.addView(sectionTitle("Dukung Daffiyanet â€” opsional"));
 
         TextView devInfo = new TextView(this);
         devInfo.setText("Tool ini gratis & open source. Kalau bermanfaat, dukung pengembangannya:");
@@ -282,7 +282,7 @@ public class MainActivity extends Activity {
         c.addView(devInfo);
 
         Button bDonate = new Button(this);
-        bDonate.setText("💛  Donasi via QRIS · 08516163719");
+        bDonate.setText("ðŸ’›  Donasi via QRIS Â· 08516163719");
         bDonate.setAllCaps(false);
         bDonate.setTextColor(0xFF1A1200);
         bDonate.setTypeface(Typeface.DEFAULT_BOLD);
@@ -295,7 +295,7 @@ public class MainActivity extends Activity {
         c.addView(bDonate);
 
         Button bSub = new Button(this);
-        bSub.setText("▶  Subscribe @affiyaofficial di YouTube");
+        bSub.setText("â–¶  Subscribe @affiyaofficial di YouTube");
         bSub.setAllCaps(false);
         bSub.setTextColor(0xFFFFFFFF);
         bSub.setBackground(round(0xFF7C3AED, 0, 12, 0));
@@ -307,7 +307,7 @@ public class MainActivity extends Activity {
         c.addView(bSub);
 
         TextView note = new TextView(this);
-        note.setText("Tidak mengunci fitur apa pun — semua jalan gratis.");
+        note.setText("Tidak mengunci fitur apa pun â€” semua jalan gratis.");
         note.setTextSize(10);
         note.setTextColor(0xFF4A5180);
         note.setPadding(0, dp(6), 0, 0);
@@ -315,7 +315,7 @@ public class MainActivity extends Activity {
         main.addView(c);
 
         TextView footer = new TextView(this);
-        footer.setText("github.com/Indra725/addwan-fiberhome-all-version · BUKAN produk resmi Fiberhome");
+        footer.setText("github.com/Indra725/addwan-fiberhome-all-version Â· BUKAN produk resmi Fiberhome");
         footer.setTextSize(10);
         footer.setTextColor(0xFF4A5180);
         footer.setGravity(Gravity.CENTER);
@@ -336,7 +336,7 @@ public class MainActivity extends Activity {
             if (ip.isEmpty()) ip = "192.168.1.1";
             Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + ip));
             startActivity(i);
-            log("Membuka web UI ONT di http://" + ip + "\nSecurity > ACL Settings → Enable, isi IP, Save.");
+            log("Membuka web UI ONT di http://" + ip + "\nSecurity > ACL Settings â†’ Enable, isi IP, Save.");
         });
         bCfg.setOnClickListener(v -> pickConfigFile());
 
@@ -364,7 +364,7 @@ public class MainActivity extends Activity {
         });
     }
 
-    // ════════════════════════ LOGIKA ════════════════════════
+    // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOGIKA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
     private static final int REQ_CONFIG = 1001;
 
@@ -547,7 +547,7 @@ public class MainActivity extends Activity {
     private void pasteMacFromClipboard() {
         try {
             android.content.ClipboardManager cm = (android.content.ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
-            if (cm == null || !cm.hasPrimaryClip()) { log("Clipboard kosong — copy MAC dari ONT dulu"); return; }
+            if (cm == null || !cm.hasPrimaryClip()) { log("Clipboard kosong â€” copy MAC dari ONT dulu"); return; }
             android.content.ClipData.Item item = cm.getPrimaryClip().getItemAt(0);
             String raw = item.getText() == null ? "" : item.getText().toString();
             String hex = raw.replaceAll("[^0-9a-fA-F]", "").toUpperCase();
@@ -589,12 +589,12 @@ public class MainActivity extends Activity {
     private void doUnlock() {
         String ip = ontIp();
         String mac = etMac.getText().toString().trim();
-        if (mac.replaceAll("[^0-9a-fA-F]", "").length() < 6) { log("MAC kosong/tidak valid — isi dulu"); return; }
+        if (mac.replaceAll("[^0-9a-fA-F]", "").length() < 6) { log("MAC kosong/tidak valid â€” isi dulu"); return; }
         log("=== UNLOCK " + ip + " ===");
         String pass = macPassword(mac);
         log("password    : " + pass);
         String localIp = phoneIp();
-        if (localIp == null) { log("ERROR: IP HP tidak terdeteksi — sambungkan ke WiFi ONT"); return; }
+        if (localIp == null) { log("ERROR: IP HP tidak terdeteksi â€” sambungkan ke WiFi ONT"); return; }
         log("IP HP       : " + localIp);
 
         FileServer server = new FileServer();
@@ -629,7 +629,7 @@ public class MainActivity extends Activity {
             Thread.sleep(1500);
             server.stop();
             doCheckOnt();
-            log("=== UNLOCK SELESAI — buka http://" + ip + " di browser HP ===");
+            log("=== UNLOCK SELESAI â€” buka http://" + ip + " di browser HP ===");
         } catch (Exception e) {
             server.stop();
             log("UNLOCK GAGAL: " + e);
@@ -644,7 +644,7 @@ public class MainActivity extends Activity {
                 "ajaxmethod=get_uplink_info&_=" + (System.currentTimeMillis() % 1000000000));
         log(resp);
         if (resp.startsWith("200")) log("\nuplink_type = dev.eth.N artinya port LAN itu jadi uplink.");
-        else log("Gagal baca — coba unlock dulu, atau cek via F12 Console: XHR.get(\"get_uplink_info\",null,d=>console.log(d))");
+        else log("Gagal baca â€” coba unlock dulu, atau cek via F12 Console: XHR.get(\"get_uplink_info\",null,d=>console.log(d))");
     }
 
     private String doSetUplink() {
@@ -827,3 +827,4 @@ public class MainActivity extends Activity {
         return bos.toByteArray();
     }
 }
+

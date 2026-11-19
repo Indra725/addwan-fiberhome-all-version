@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.15] - 2026-11-19
+
+### Ditambahkan
+- **Add_WAN_FH + Config** — kedua aplikasi (Add_WAN_FH.exe + FiberhomeConfigUtility.exe) **digabung jadi satu APK** (`Add WAN FH + Config`). Add WAN FH.exe = telnet client otomatis (add WAN), ConfigUtility = dekripsi/encrypt config - sekarang keduanya dalam 1 app, bisa dipakai di HP tanpa PC, tanpa custom webUI terpisah.
+- Nama aplikasi diubah: `Add WAN FH + Config` (label, judul, package tetap `com.daffiyanet.addwan`).
+- Rilis **v2.9** (`versionCode=10`, SHA256 `01498DB7...`, 1.100.578 byte).
+
 ## [v2.14] - 2026-11-19
 
 ### Ditambahkan
