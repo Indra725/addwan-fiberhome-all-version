@@ -35,6 +35,8 @@ import threading
 HERE = os.path.dirname(os.path.abspath(__file__))
 SCRIPT = os.path.join(HERE, 'custom-webui.sh')
 TIMEOUT = 5
+TELNET_PORT = int(os.environ.get('AWAN_TELNET_PORT', '23'))
+HTTP_PORT = int(os.environ.get('AWAN_HTTP_PORT', '80'))
 
 TELNET_IAC, TELNET_DONT, TELNET_DO, TELNET_WONT, TELNET_WILL, TELNET_SB, TELNET_SE = 255, 254, 253, 252, 251, 250, 240
 
@@ -93,14 +95,14 @@ def tcp_open(ip, port, timeout=2):
 
 def check_ont(ip):
     print('\n[1/4] ping TCP 23/80...')
-    for port, name in ((23, 'telnet'), (80, 'http')):
+    for port, name in ((TELNET_PORT, 'telnet'), (HTTP_PORT, 'http')):
         ok = tcp_open(ip, port)
         print('      TCP %-3s (%-6s) %s' % (port, name, 'TERBUKA' if ok else 'tutup'))
     print('[2/4] login page ONT...')
-    code, body = http_req('GET', 'http://%s/html/login_inter.html' % ip)
+    code, body = http_req('GET', 'http://%s:%d/html/login_inter.html' % (ip, HTTP_PORT))
     print('      HTTP %s (%d bytes)' % (code, len(body)))
     print('[3/4] custom webui...')
-    code, body = http_req('GET', 'http://%s/image/logo_Intelbras_fiberhome.png' % ip)
+    code, body = http_req('GET', 'http://%s:%d/image/logo_Intelbras_fiberhome.png' % (ip, HTTP_PORT))
     if code == 200 and len(body) > 1000:
         print('      AKTIF')
     else:
@@ -202,7 +204,7 @@ def unlock_ont(ip, mac):
     print('Serve:', url)
     threading.Thread(target=httpd.serve_forever, daemon=True).start()
     try:
-        t = Telnet(ip)
+        t = Telnet(ip, TELNET_PORT)
         t.read_until(b'ogin:')
         t.send('gpon')
         t.read_until(b'assword:')
@@ -236,7 +238,7 @@ def cgi_call(ip, method, params=None):
     params = params or {}
     body = '&'.join('%s=%s' % (k, urllib.parse.quote(str(v))) for k, v in params.items())
     body = (body + '&' if body else '') + 'ajaxmethod=%s&_=%d' % (method, int(time.time() * 1000) % 10**9)
-    code, raw = http_req('POST', 'http://%s/cgi-bin/ajax' % ip, body)
+    code, raw = http_req('POST', 'http://%s:%d/cgi-bin/ajax' % (ip, HTTP_PORT), body)
     print('HTTP %s' % code)
     print(raw[:2000])
     return code, raw

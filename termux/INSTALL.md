@@ -77,6 +77,14 @@ python termux/addwan.py set 192.168.1.1 dev.eth.1
 | Tidak bisa clone repo (network error) | Cek koneksi data/WiFi HP; coba `ping 8.8.8.8` di Termux; test `curl -I https://github.com` |
 | MAC ONT tidak kebaca | Lihat label belakang ONT (`MAC: xx:xx:xx:xx:xx:xx`) |
 
+## 6. Uji tanpa perangkat asli (opsional, Windows/PC/Termux)
+
+```bash
+python termux/test_mock.py
+```
+
+Simulator ONT (telnet CLI + CGI Fiberhome tiruan) — memverifikasi alur check/unlock/status/set end-to-end. Semua harus `[PASS]`.
+
 ## Detail teknis
 
 - Semua operasi hanya lewat **socket TCP 23 (telnet)** dan **TCP 80 (HTTP)** — tidak menyentuh shell sistem Android, tidak butuh root.

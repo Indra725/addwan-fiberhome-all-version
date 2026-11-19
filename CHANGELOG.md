@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.2] - 2026-11-19
+
+### Ditambahkan
+- **`termux/test_mock.py`** — simulator ONT Fiberhome (telnet CLI + CGI tiruan) untuk uji tanpa hardware. **Hasil: 10/10 PASS** (check/unlock/status/set terverifikasi end-to-end).
+- Port ONT bisa dikonfigurasi via env (`AWAN_TELNET_PORT`, `AWAN_HTTP_PORT`, default 23/80).
+
 ## [v2.1] - 2026-11-19
 
 ### Ditambahkan
