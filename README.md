@@ -15,7 +15,7 @@ Tool teknisi ISP / installer jaringan untuk modem **Fiberhome ONU/ONT** (seri AN
 |---|---|---|---|
 | Windows | `Add_WAN_FH.exe` (v1.0), `FiberhomeConfigUtility.exe` (v1.1) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases) | tidak perlu |
 | Android APK | `Add_WAN_FH_Mobile.apk` (v2.0) | [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.0) | tidak perlu |
-| **Termux (HP)** | `termux/addwan.py` (v2.1) | `pkg install python git && git clone` (lihat di bawah) | **tidak perlu** |
+| **Termux (HP)** | `termux/addwan.py` (v2.3) | `pkg install python git && git clone` (lihat di bawah) | **tidak perlu** |
 
 ## Android APK (v2.0)
 
@@ -52,7 +52,9 @@ Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH & utility Fiberhome. Bi
 
 | Versi | File | Tanggal | Rilis |
 |---|---|---|---|
-| v2.1 | `termux/addwan.py` | 2026-11-19 | (source di repo) |
+| v2.3 | `termux/addwan.py` + `termux/custom-webui.bin` (Local Upgrade web UI) | 2026-11-19 | (source di repo) |
+| v2.2 | `termux/addwan.py` (+ simulator test_mock.py) | 2026-11-19 | (source di repo) |
+| v2.1 | `termux/addwan.py` awal | 2026-11-19 | (source di repo) |
 | v2.0 | `Add_WAN_FH_Mobile.apk` (Android) | 2026-11-19 | [releases/v2.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v2.0) |
 | v1.1 | `FiberhomeConfigUtility.exe` | 2026-10-22 | [releases/v1.1](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.1) |
 | v1.0 | `Add_WAN_FH.exe` | 2026-10-21 | [releases/v1.0](https://github.com/Indra725/addwan-fiberhome-all-version/releases/tag/v1.0) |
@@ -104,3 +106,4 @@ Tool adalah milik pembuat/distributor aslinya. Distribusi di repo ini atas izin 
 ## Lapor masalah
 
 Buka tab **Issues**. Sertakan: versi tool, firmware ONT, langkah reproduksi.
+
