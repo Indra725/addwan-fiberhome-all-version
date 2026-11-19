@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.16] - 2026-11-19
+
+### Ditambahkan
+- **ENCRYPT CONFIG** - buat file config terenkripsi dari teks decrypted (untuk upload kembali ke ONT via Local Upgrade). Meng-encode `XOR 0x2537` -> gzip -> untar.
+- **ENCRYPT/DECRYPT STRING AES-ECB** (key `ABCDEFGHIJKLMNOP`) - enkripsi/dekripsi nilai config satu per satu.
+- Semua fungsi FiberhomeConfigUtility.exe kini terintegrasi di satu APK.
+
 ## [v2.15] - 2026-11-19
 
 ### Ditambahkan

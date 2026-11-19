@@ -25,7 +25,7 @@ import android.widget.TextView;
  */
 public class MainActivity extends Activity {
 
-    private EditText etIp, etMac;
+    private EditText etIp, etMac, etUser, etPass;
     private TextView tvLog;
     private android.widget.ScrollView logScroll;
     private android.widget.Spinner spPort;
@@ -45,6 +45,7 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(buildUi());
+        loadSavedOntCredentials();
     }
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
@@ -213,6 +214,47 @@ public class MainActivity extends Activity {
         c.addView(macRow);
         main.addView(c);
 
+        // ===== CARD: AKUN ONT =====
+        c = card();
+        c.addView(sectionTitle("Akun ONT (untuk login web UI)"));
+
+        TextView userLabel = new TextView(this);
+        userLabel.setText("USERNAME");
+        userLabel.setTextColor(MUTED);
+        userLabel.setTextSize(10);
+        userLabel.setLetterSpacing(0.16f);
+        c.addView(userLabel);
+        etUser = field("admin", "admin");
+        etUser.setTextColor(TEXT);
+        c.addView(etUser);
+
+        TextView passLabel = new TextView(this);
+        passLabel.setText("PASSWORD");
+        passLabel.setTextColor(MUTED);
+        passLabel.setTextSize(10);
+        passLabel.setLetterSpacing(0.16f);
+        passLabel.setPadding(0, dp(10), 0, dp(4));
+        c.addView(passLabel);
+        etPass = field("password web UI ONT", null);
+        etPass.setInputType(android.text.InputType.TYPE_CLASS_TEXT | android.text.InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        etPass.setTextColor(TEXT);
+        etPass.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) saveOntCredentials();
+        });
+        c.addView(etPass);
+
+        android.widget.CheckBox cbSave = new android.widget.CheckBox(this);
+        cbSave.setText("Simpan username & password di HP");
+        cbSave.setTextColor(MUTED);
+        cbSave.setChecked(true);
+        cbSave.setOnCheckedChangeListener((btn, checked) -> {
+            getSharedPreferences("ont", MODE_PRIVATE).edit().putBoolean("save", checked).apply();
+            if (checked) saveOntCredentials();
+        });
+        cbSave.setPadding(0, dp(8), 0, 0);
+        c.addView(cbSave);
+        main.addView(c);
+
         // ===== CARD: AKSI =====
         c = card();
         c.addView(sectionTitle("Aksi"));
@@ -223,6 +265,9 @@ public class MainActivity extends Activity {
         Button bSet = act("4.  SET UPLINK", 0xFF7C3AED);
         Button bAcl = act("5.  AKTIFKAN ACL (buka web UI)", 0xFF1E40AF);
         Button bCfg = act("6.  BACA CONFIG (file ONT)", 0xFFB45309);
+        Button bEnc = act("7.  ENCRYPT CONFIG (buat file upload ONT)", 0xFF0F766E);
+        Button bAesE = act("8.  ENCRYPT STRING (AES/ECB)", 0xFF334155);
+        Button bAesD = act("9.  DECRYPT STRING (AES/ECB)", 0xFF334155);
         c.addView(bCheck);
         c.addView(bUnlock);
         c.addView(bStatus);
@@ -241,6 +286,9 @@ public class MainActivity extends Activity {
         c.addView(rowSet);
         c.addView(bAcl);
         c.addView(bCfg);
+        c.addView(bEnc);
+        c.addView(bAesE);
+        c.addView(bAesD);
         main.addView(c);
 
         // ===== CARD: LOG =====
@@ -339,6 +387,9 @@ public class MainActivity extends Activity {
             log("Membuka web UI ONT di http://" + ip + "\nSecurity > ACL Settings â†’ Enable, isi IP, Save.");
         });
         bCfg.setOnClickListener(v -> pickConfigFile());
+        bEnc.setOnClickListener(v -> pickEncryptFile());
+        bAesE.setOnClickListener(v -> showAesDialog(true));
+        bAesD.setOnClickListener(v -> showAesDialog(false));
 
         root.addView(main);
         return root;
@@ -366,7 +417,76 @@ public class MainActivity extends Activity {
 
     // â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â• LOGIKA â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
+    private void loadSavedOntCredentials() {
+        String u = getSharedPreferences("ont", MODE_PRIVATE).getString("user", "admin");
+        String p = getSharedPreferences("ont", MODE_PRIVATE).getString("pass", "");
+        boolean save = getSharedPreferences("ont", MODE_PRIVATE).getBoolean("save", true);
+        etUser.setText(u);
+        if (!p.isEmpty()) etPass.setText(p);
+    }
+
+    private void saveOntCredentials() {
+        boolean save = getSharedPreferences("ont", MODE_PRIVATE).getBoolean("save", true);
+        if (save) {
+            getSharedPreferences("ont", MODE_PRIVATE).edit()
+                    .putString("user", etUser.getText().toString().trim())
+                    .putString("pass", etPass.getText().toString())
+                    .apply();
+        }
+    }
+
+    private String ontLogin() {
+        String ip = ontIp();
+        String user = etUser.getText().toString().trim();
+        String pass = etPass.getText().toString();
+        if (pass.isEmpty()) {
+            log("password kosong - isi di kartu Akun ONT");
+            return null;
+        }
+        try {
+            String acs = httpRequest("GET", "http://" + ip + "/cgi-bin/ajax?ajaxmethod=get_acs_random&_=" + (System.currentTimeMillis() % 1000000000), null);
+            String sessionid = jsonValue(acs, "sessionid");
+            if (sessionid == null) { log("get_acs_random gagal: " + acs); return null; }
+            javax.crypto.Cipher c = javax.crypto.Cipher.getInstance("AES/CBC/PKCS5Padding");
+            c.init(javax.crypto.Cipher.ENCRYPT_MODE,
+                    new javax.crypto.spec.SecretKeySpec("6HTT4DL67FVDkLVL".getBytes("US-ASCII"), "AES"),
+                    new javax.crypto.spec.IvParameterSpec("6HTT4DL67FVDkLVL".getBytes("US-ASCII")));
+            byte[] enc = c.doFinal(pass.getBytes("UTF-8"));
+            StringBuilder sb = new StringBuilder();
+            for (byte b : enc) sb.append(String.format("%02X", b));
+            String body = "ajaxmethod=do_login&username=" + java.net.URLEncoder.encode(user, "UTF-8")
+                    + "&loginpd=" + sb + "&port=0&sessionid=" + sessionid + "&_=" + (System.currentTimeMillis() % 1000000000);
+            String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
+            saveOntCredentials();
+            if (resp.contains("\"login_result\":0")) {
+                log("login web UI ONT: OK");
+                return sessionid;
+            }
+            log("login GAGAL: " + resp);
+            return null;
+        } catch (Exception e) {
+            log("login ERROR: " + e);
+            return null;
+        }
+    }
+
+    private String jsonValue(String json, String key) {
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("\"" + key + "\"\\s*:\\s*\"([^\"]*)\"").matcher(json);
+        return m.find() ? m.group(1) : null;
+    }
+
+    private String ontCgi(String ajaxmethod, String params) {
+        String ip = ontIp();
+        String body = "ajaxmethod=" + ajaxmethod
+                + (params == null || params.isEmpty() ? "" : "&" + params)
+                + "&_=" + (System.currentTimeMillis() % 1000000000);
+        return httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
+    }
+
     private static final int REQ_CONFIG = 1001;
+    private static final int REQ_ENCRYPT = 1002;
+    private static final int REQ_SAVE_CONFIG = 1003;
+    private byte[] pendingConfigBytes;
 
     private void pickConfigFile() {
         Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
@@ -378,13 +498,28 @@ public class MainActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode != REQ_CONFIG || resultCode != RESULT_OK || data == null || data.getData() == null) return;
+        if (resultCode != RESULT_OK || data == null || data.getData() == null) return;
         try {
             java.io.InputStream is = getContentResolver().openInputStream(data.getData());
             if (is == null) { log("ERROR: tidak bisa membaca file"); return; }
             byte[] bytes = readAllBytes(is);
             is.close();
-            io.execute(() -> decryptAndShowConfig(bytes));
+            if (requestCode == REQ_CONFIG) {
+                io.execute(() -> decryptAndShowConfig(bytes));
+            } else if (requestCode == REQ_ENCRYPT) {
+                io.execute(() -> encryptAndSaveConfig(bytes));
+            } else if (requestCode == REQ_SAVE_CONFIG && pendingConfigBytes != null) {
+                try (java.io.OutputStream out = getContentResolver().openOutputStream(data.getData())) {
+                    if (out == null) { log("ERROR: tidak bisa tulis file"); return; }
+                    out.write(pendingConfigBytes);
+                    log("TERSIMPAN: " + data.getData().getPath());
+                    log("Upload file ini di web UI ONT:");
+                    log("  Management > Device Management > Local Upgrade");
+                } catch (Exception e) {
+                    log("ERROR menulis file: " + e);
+                }
+                pendingConfigBytes = null;
+            }
         } catch (Exception e) {
             log("ERROR membaca file: " + e);
         }
@@ -408,6 +543,76 @@ public class MainActivity extends Activity {
             while ((n = gis.read(tmp)) != -1) bos.write(tmp, 0, n);
         }
         return bos.toByteArray();
+    }
+
+    private byte[] gzipBytes(byte[] data) throws java.io.IOException {
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        try (java.util.zip.GZIPOutputStream gos = new java.util.zip.GZIPOutputStream(bos)) {
+            gos.write(data);
+        }
+        return bos.toByteArray();
+    }
+
+    private void tarPutString(byte[] header, int offset, String value, int maxLen) {
+        byte[] b = value.getBytes(java.nio.charset.StandardCharsets.US_ASCII);
+        int len = Math.min(b.length, maxLen - 1);
+        for (int i = 0; i < len; i++) header[offset + i] = b[i];
+    }
+
+    private void tarPutOctal(byte[] header, int offset, int value, int fieldLen) {
+        String s = Integer.toOctalString(value);
+        int len = Math.min(s.length(), fieldLen - 1);
+        int pad = fieldLen - 1 - len;
+        for (int i = 0; i < pad; i++) header[offset + i] = '0';
+        for (int i = 0; i < len; i++) header[offset + pad + i] = (byte) s.charAt(i);
+        header[offset + fieldLen - 1] = 0;
+    }
+
+    private byte[] tarUsrconfig(String text) {
+        byte[] content = text.getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        byte[] header = new byte[512];
+        tarPutString(header, 0, "usrconfig_conf", 100);
+        tarPutString(header, 100, "0000644\0", 8);
+        tarPutString(header, 108, "0000000\0", 8);
+        tarPutString(header, 116, "0000000\0", 8);
+        tarPutOctal(header, 124, content.length, 12);
+        tarPutOctal(header, 136, (int) (System.currentTimeMillis() / 1000), 12);
+        for (int i = 148; i < 156; i++) header[i] = ' ';
+        header[156] = '0';
+        header[257] = 'u'; header[258] = 's'; header[259] = 't'; header[260] = 'a'; header[261] = 'r';
+        long sum = 0;
+        for (byte b : header) sum += (b & 0xFF);
+        tarPutOctal(header, 148, (int) sum, 8);
+        java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+        try {
+            bos.write(header);
+            bos.write(content);
+            int remainder = content.length % 512;
+            if (remainder != 0) bos.write(new byte[512 - remainder]);
+            bos.write(new byte[1024]); // end-of-archive two zero blocks
+        } catch (java.io.IOException ignored) {}
+        return bos.toByteArray();
+    }
+
+    private void encryptAndSaveConfig(byte[] plainBytes) {
+        log("=== ENCRYPT CONFIG ===");
+        log("input: " + plainBytes.length + " bytes (teks config)");
+        try {
+            String text = new String(plainBytes, java.nio.charset.StandardCharsets.UTF_8);
+            byte[] tar = tarUsrconfig(text);
+            byte[] gz = gzipBytes(tar);
+            byte[] enc = xorTransform(gz, 0x2537);
+            log("tar.gz+xor: " + enc.length + " bytes");
+            pendingConfigBytes = enc;
+            Intent save = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+            save.addCategory(Intent.CATEGORY_OPENABLE);
+            save.setType("application/octet-stream");
+            save.putExtra(Intent.EXTRA_TITLE, "usrconfig_conf");
+            startActivityForResult(save, REQ_SAVE_CONFIG);
+            log("pilih lokasi penyimpanan file...");
+        } catch (Exception e) {
+            log("ENCRYPT ERROR: " + e);
+        }
     }
 
     private String untarUsrconfig(byte[] data) {
@@ -513,6 +718,64 @@ public class MainActivity extends Activity {
         log("=== SELESAI ===");
     }
 
+    private void pickEncryptFile() {
+        Intent i = new Intent(Intent.ACTION_OPEN_DOCUMENT);
+        i.setType("*/*");
+        i.addCategory(Intent.CATEGORY_OPENABLE);
+        startActivityForResult(i, REQ_ENCRYPT);
+    }
+
+    private void showAesDialog(boolean encrypt) {
+        android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint(encrypt ? "teks biasa -> hex terenkripsi" : "hex -> teks biasa");
+        input.setMinLines(3);
+        input.setGravity(Gravity.TOP | Gravity.START);
+        new AlertDialog.Builder(this)
+                .setTitle(encrypt ? "ENCRYPT STRING (AES/ECB)" : "DECRYPT STRING (AES/ECB)")
+                .setView(input)
+                .setPositiveButton("PROSES", (d, w) -> {
+                    String raw = input.getText().toString().trim();
+                    if (raw.isEmpty()) { log("input kosong"); return; }
+                    log((encrypt ? "ENCRYPT STRING => " : "DECRYPT STRING => ") + (encrypt ? aesEncryptToHex(raw) : aesDecryptHexToText(raw)));
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
+
+    private String aesEncryptToHex(String text) {
+        try {
+            javax.crypto.Cipher c = javax.crypto.Cipher.getInstance("AES/ECB/NoPadding");
+            byte[] key = "ABCDEFGHIJKLMNOP".getBytes("US-ASCII");
+            c.init(javax.crypto.Cipher.ENCRYPT_MODE, new javax.crypto.spec.SecretKeySpec(key, "AES"));
+            byte[] data = text.getBytes("UTF-8");
+            int rem = data.length % 16;
+            if (rem != 0) {
+                byte[] padded = java.util.Arrays.copyOf(data, data.length + (16 - rem));
+                data = padded;
+            }
+            byte[] out = c.doFinal(data);
+            StringBuilder sb = new StringBuilder();
+            for (byte b : out) sb.append(String.format("%02X", b));
+            return sb.toString();
+        } catch (Exception e) {
+            return "ERROR: " + e;
+        }
+    }
+
+    private String aesDecryptHexToText(String hex) {
+        try {
+            javax.crypto.Cipher c = javax.crypto.Cipher.getInstance("AES/ECB/NoPadding");
+            byte[] key = "ABCDEFGHIJKLMNOP".getBytes("US-ASCII");
+            c.init(javax.crypto.Cipher.DECRYPT_MODE, new javax.crypto.spec.SecretKeySpec(key, "AES"));
+            byte[] out = c.doFinal(hexStringToBytes(hex));
+            int end = out.length;
+            while (end > 0 && out[end - 1] == 0) end--;
+            return new String(out, 0, end, "UTF-8");
+        } catch (Exception e) {
+            return "ERROR: " + e;
+        }
+    }
+
     private String phoneIp() {
         try {
             java.util.Enumeration<java.net.NetworkInterface> ifs = java.net.NetworkInterface.getNetworkInterfaces();
@@ -583,6 +846,17 @@ public class MainActivity extends Activity {
         log("login page  : HTTP " + login.split("\n", 2)[0] + " (" + login.length() + " bytes)");
         String logo = httpRequest("GET", "http://" + ip + "/image/logo_Intelbras_fiberhome.png", null);
         log(logo.startsWith("200") && logo.length() > 1000 ? "custom webui: AKTIF" : "custom webui: belum terdeteksi");
+        if (etPass != null && etPass.getText().length() > 0) {
+            log("");
+            log("Membaca data dari ONT (login web UI)...");
+            String sid = ontLogin();
+            if (sid != null) {
+                log("uplink_info: " + ontCgi("get_uplink_info", null));
+                log("acl_info   : " + ontCgi("get_acl_info", null));
+            }
+        } else {
+            log("isi password di kartu Akun ONT untuk baca uplink/ACL langsung");
+        }
         log("IP HP saya  : " + phoneIp());
     }
 
@@ -639,23 +913,46 @@ public class MainActivity extends Activity {
 
     private void doStatusUplink() {
         String ip = ontIp();
-        log("=== UPLINK STATUS " + ip + " ===");
-        String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax",
-                "ajaxmethod=get_uplink_info&_=" + (System.currentTimeMillis() % 1000000000));
-        log(resp);
-        if (resp.startsWith("200")) log("\nuplink_type = dev.eth.N artinya port LAN itu jadi uplink.");
-        else log("Gagal baca â€” coba unlock dulu, atau cek via F12 Console: XHR.get(\"get_uplink_info\",null,d=>console.log(d))");
+        log("=== STATUS / UPLINK " + ip + " ===");
+        String sid = ontLogin();
+        if (sid == null) { log("login gagal - cek password di kartu Akun ONT"); return; }
+        log("uplink_info:");
+        log(ontCgi("get_uplink_info", null));
+        log("acl_info:");
+        log(ontCgi("get_acl_info", null));
+        log("refresh_sessionid:");
+        log(ontCgi("get_refresh_sessionid", null));
     }
 
     private String doSetUplink() {
         String ip = ontIp();
         String port = String.valueOf(spPort.getSelectedItem());
-        String body = "ajaxmethod=set_uplink_info&_=" + (System.currentTimeMillis() % 1000000000)
-                + "&uplink_type=" + java.net.URLEncoder.encode(port);
         log("=== SET UPLINK " + ip + " -> " + port + " ===");
-        String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
-        log(resp);
+        String sid = ontLogin();
+        if (sid == null) { log("login gagal"); return null; }
+        String resp;
+        try {
+            resp = ontCgi("set_uplink_info", "uplink_type=" + java.net.URLEncoder.encode(port, "UTF-8"));
+        } catch (java.io.UnsupportedEncodingException e) {
+            resp = ontCgi("set_uplink_info", "uplink_type=" + port);
+        }
+        log("set_uplink_info: " + resp);
+        log("cek: " + ontCgi("get_uplink_info", null));
         return resp;
+    }
+
+    private void doToggleAcl() {
+        String sid = ontLogin();
+        if (sid == null) return;
+        String before = ontCgi("get_acl_info", null);
+        log("acl sebelum: " + before);
+        boolean enabled = before.contains("\"Enable\":\"1\"");
+        String target = enabled ? "0" : "1";
+        String resp = ontCgi("set_acl_info", "action=enable&Enable=" + target);
+        log("set_acl_info(Enable=" + target + "): " + resp);
+        String after = ontCgi("get_acl_info", null);
+        log("acl sesudah: " + after);
+        log(enabled ? "ACL sekarang NONAKTIF" : "ACL sekarang AKTIF");
     }
 
     private String httpRequest(String method, String url, String body) {
