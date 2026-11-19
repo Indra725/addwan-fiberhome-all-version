@@ -2,6 +2,13 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.8] - 2026-11-19
+
+### Diperbaiki
+- **Add_WAN_FH_Mobile.apk di-rebuild sepenuhnya dengan Gradle/AGP** (AGP 9.1.1 + Gradle 9.3.1) - struktur APK identik dengan billing-daffiyanet.apk yang terbukti installable di HP Anda (res/arsc stored, dex deflate, pipeline resmi). Menggantikan build manual (aapt2/d8 + zip-recompress) yang gagal mengurai paket.
+- `android-gradle/` ditambahkan: proyek Gradle lengkap (gradlew, wrapper, AGP 9.1.1) - `gradlew.bat assembleRelease` untuk build ulang.
+- Rilis **v2.2** dibintangi. README/dokumen Termux diarahkan ke v2.2 (SHA256 `CF20F20F...`, 1.094.465 byte).
+
 ## [v2.7] - 2026-11-19
 
 ### Perbaikan
@@ -89,3 +96,4 @@ Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via 
 - MD5: `B581DADADA3E1A2D43D05D8FB5422527`
 - Ukuran: 12.528.392 byte
 - Unsigned - Windows Defender: tidak ada ancaman (diperiksa 2026-11-19)
+
