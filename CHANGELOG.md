@@ -2,6 +2,15 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.10] - 2026-11-19
+
+### Ditambahkan
+- **Tombol donasi/subscribe opsional** di Add_WAN_FH_Mobile — **tidak mengunci fitur apa pun**: Donasi via QRIS (08516163719 a.n. Daffiyanet / https://indra725.github.io/donasi/), Subscribe YouTube @affiyaofficial.
+- **Tombol "5. AKTIFKAN ACL"** — membuka web UI ONT (`Security > ACL Settings`) untuk perangkat milik Anda.
+- Recovery total fungsionalitas: CEK ONT / UNLOCK / STATUS UPLINK / SET UPLINK dikembalikan (setelah versi stub).
+- Spinner port `dev.eth.1..5` di baris SET UPLINK.
+- Rilis **v2.4** (`versionCode=5`).
+
 ## [v2.9] - 2026-11-19
 
 ### Diperbaiki

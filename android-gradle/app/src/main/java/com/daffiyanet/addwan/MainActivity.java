@@ -2,10 +2,11 @@ package com.daffiyanet.addwan;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
-import android.os.Build;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.View;
@@ -18,42 +19,26 @@ import android.widget.ScrollView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.ServerSocket;
-import java.net.Socket;
-import java.net.URLEncoder;
-import java.net.HttpURLConnection;
-import java.util.Enumeration;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 /**
- * Add WAN FH Mobile v2.3 — unlock Fiberhome HG6145F1/D2 (RP4423) & set uplink via HP.
- * Tool ini BUKAN produk resmi Fiberhome; gunakan hanya pada perangkat milik Anda.
+ * Add WAN FH Mobile — v2.4
+ * Tool ISP sendiri untuk HG6145F1/D2 pada perangkat yang Anda miliki / kelola.
  */
 public class MainActivity extends Activity {
+
     private EditText etIp, etMac;
     private TextView tvLog;
-    private Spinner spPort;
-    private final ExecutorService io = Executors.newSingleThreadExecutor();
+    private android.widget.Spinner spPort;
+    private final java.util.concurrent.ExecutorService io = java.util.concurrent.Executors.newSingleThreadExecutor();
 
-    private static final int BG          = 0xFF070B1A;
-    private static final int CARD        = 0xFF111831;
+    private static final int BG = 0xFF070B1A;
+    private static final int CARD = 0xFF111831;
     private static final int CARD_STROKE = 0xFF26304E;
-    private static final int INPUT_BG    = 0xFF0D1430;
-    private static final int INPUT_STR   = 0xFF2F4B7C;
-    private static final int GOLD        = 0xFFFFD54A;
-    private static final int MINT        = 0xFF7CFFC4;
-    private static final int TEXT        = 0xFFE8F6FF;
-    private static final int MUTED       = 0xFF8E94B8;
-    private static final int CYAN        = 0xFF00E5FF;
-    private static final int AMBER       = 0xFFF59E0B;
-    private static final int GREEN       = 0xFF22C55E;
-    private static final int PURPLE      = 0xFF8B5CF6;
+    private static final int INPUT_BG = 0xFF0D1430;
+    private static final int INPUT_STR = 0xFF2F4B7C;
+    private static final int GOLD = 0xFFFFD54A;
+    private static final int MINT = 0xFF7CFFC4;
+    private static final int TEXT = 0xFFE8F6FF;
+    private static final int MUTED = 0xFF8E94B8;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,185 +57,11 @@ public class MainActivity extends Activity {
         return d;
     }
 
-    private TextView label(String s, boolean small, int padTop) {
-        TextView t = new TextView(this);
-        t.setText(s.toUpperCase());
-        t.setTextSize(small ? 10 : 12);
-        t.setLetterSpacing(0.14f);
-        t.setTypeface(Typeface.DEFAULT_BOLD);
-        t.setTextColor(GOLD);
-        t.setPadding(0, padTop, 0, dp(5));
-        return t;
-    }
-
-    private EditText field(String hint, String initial) {
-        EditText e = new EditText(this);
-        e.setHint(hint);
-        e.setHintTextColor(0xFF5F7694);
-        e.setTextColor(TEXT);
-        e.setTextSize(15);
-        e.setSingleLine(true);
-        e.setPadding(dp(14), dp(11), dp(14), dp(11));
-        e.setBackground(round(INPUT_BG, INPUT_STR, 12, 1));
-        if (initial != null) e.setText(initial);
-        return e;
-    }
-
-    private Button actionBtn(String text, int bg) {
-        Button b = new Button(this);
-        b.setText(text);
-        b.setAllCaps(false);
-        b.setTextSize(13);
-        b.setTypeface(Typeface.DEFAULT_BOLD);
-        b.setLetterSpacing(0.06f);
-        b.setTextColor(0xFFFFFFFF);
-        b.setMinHeight(dp(50));
-        b.setBackground(round(bg, 0, 14, 0));
-        b.setPadding(dp(8), 0, dp(8), 0);
-        return b;
-    }
-
-    private View buildUi() {
-        ScrollView root = new ScrollView(this);
-        root.setFillViewport(true);
-        root.setBackgroundColor(BG);
-
-        LinearLayout main = new LinearLayout(this);
-        main.setOrientation(LinearLayout.VERTICAL);
-        int pad = dp(16);
-        main.setPadding(pad, dp(10), pad, dp(16));
-        main.setBackgroundColor(BG);
-
-        // ===== HEADER =====
-        LinearLayout header = new LinearLayout(this);
-        header.setOrientation(LinearLayout.VERTICAL);
-        header.setPadding(0, dp(4), 0, dp(12));
-
-        TextView title = new TextView(this);
-        title.setText("⚡ ADD WAN FH");
-        title.setTextSize(30);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
-        title.setTextColor(GOLD);
-        title.setShadowLayer(dp(8), 0, 0, 0x80FFD54A);
-        header.addView(title);
-
-        TextView sub = new TextView(this);
-        sub.setText("Unlock HG6145F1/D2  ·  Set uplink  ·  via HP");
-        sub.setTextSize(12);
-        sub.setTextColor(MUTED);
-        sub.setPadding(0, dp(2), 0, 0);
-        header.addView(sub);
-
-        main.addView(header);
-
-        // ===== CARD: KONEKSI ONT =====
-        LinearLayout card1 = card();
-        main.addView(card1);
-
-        card1.addView(label("Koneksi ONT", true, dp(0)));
-
-        card1.addView(label("IP ONT", false, dp(8)));
-        etIp = field("192.168.1.1", "192.168.1.1");
-        etIp.setTextColor(CYAN);
-        card1.addView(etIp);
-
-        card1.addView(label("MAC ONT (label belakang)", false, dp(14)));
-        etMac = field("94:6B:12:AB:CD:EF", null);
-        etMac.setTextColor(GOLD);
-        etMac.setInputType(0x00000001 | 0x00001000 | 0x00000080); // text | cap characters
-        card1.addView(etMac);
-
-        // ===== BUTTONS =====
-        LinearLayout row1 = new LinearLayout(this);
-        row1.setOrientation(LinearLayout.HORIZONTAL);
-        row1.setPadding(0, dp(14), 0, 0);
-        Button bCheck = actionBtn("1. CEK ONT", 0xFF0891B2);
-        Button bUnlock = actionBtn("2. UNLOCK", AMBER);
-        row1.addView(bCheck, lp(0, 1f, 0, 0, 0, 0));
-        row1.addView(bUnlock, lp(0, 1f, dp(8), 0, 0, 0));
-        card1.addView(row1);
-
-        Button bStatus = actionBtn("3. STATUS UPLINK", 0xFF15803D);
-        bStatus.setLayoutParams(lp(ViewGroup.LayoutParams.MATCH_PARENT, 0f, 0, dp(8), 0, 0));
-        card1.addView(bStatus);
-
-        LinearLayout row3 = new LinearLayout(this);
-        row3.setOrientation(LinearLayout.HORIZONTAL);
-        row3.setPadding(0, dp(8), 0, 0);
-        spPort = new Spinner(this);
-        String[] ports = {"dev.eth.1", "dev.eth.2", "dev.eth.3", "dev.eth.4", "dev.eth.5"};
-        ArrayAdapter<String> ad = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ports);
-        ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spPort.setAdapter(ad);
-        spPort.setBackground(round(INPUT_BG, INPUT_STR, 12, 1));
-        spPort.setPadding(dp(10), 0, dp(10), 0);
-        Button bSet = actionBtn("4. SET UPLINK", PURPLE);
-        row3.addView(spPort, new LinearLayout.LayoutParams(dp(118), LinearLayout.LayoutParams.WRAP_CONTENT));
-        row3.addView(bSet, lp(0, 1f, dp(8), 0, 0, 0));
-        card1.addView(row3);
-
-        // ===== CARD: LOG =====
-        LinearLayout card2 = card();
-        main.addView(card2);
-
-        LinearLayout logHeader = new LinearLayout(this);
-        logHeader.setOrientation(LinearLayout.HORIZONTAL);
-        logHeader.setGravity(Gravity.CENTER_VERTICAL);
-        logHeader.setPadding(0, dp(2), 0, dp(8));
-        TextView dot = new TextView(this);
-        dot.setText("● ● ●");
-        dot.setTextSize(10);
-        dot.setTextColor(0xFFFF5C57);
-        logHeader.addView(dot);
-        TextView logTitle = new TextView(this);
-        logTitle.setText("  output");
-        logTitle.setTextColor(MINT);
-        logTitle.setTypeface(Typeface.MONOSPACE);
-        logTitle.setTextSize(12);
-        logHeader.addView(logTitle);
-        card2.addView(logHeader);
-
-        tvLog = new TextView(this);
-        tvLog.setTextSize(10);
-        tvLog.setTypeface(Typeface.MONOSPACE);
-        tvLog.setTextColor(MINT);
-        tvLog.setBackgroundColor(0xFF05070F);
-        tvLog.setPadding(dp(12), dp(10), dp(12), dp(10));
-        tvLog.setText("Siap. Sambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
-        tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
-        ScrollView logScroll = new ScrollView(this);
-        logScroll.addView(tvLog);
-        LinearLayout.LayoutParams lpLog = new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, dp(160));
-        logScroll.setLayoutParams(lpLog);
-        card2.addView(logScroll);
-
-        TextView footer = new TextView(this);
-        footer.setText("github.com/Indra725/addwan-fiberhome-all-version · BUKAN produk resmi Fiberhome");
-        footer.setTextColor(0xFF4A5180);
-        footer.setTextSize(10);
-        footer.setPadding(0, dp(10), 0, 0);
-        main.addView(footer);
-
-        bCheck.setOnClickListener(v -> runTask(this::doCheckOnt, bCheck, bUnlock, bStatus, bSet));
-        bUnlock.setOnClickListener(v -> runTask(this::doUnlock, bCheck, bUnlock, bStatus, bSet));
-        bStatus.setOnClickListener(v -> runTask(this::doStatusUplink, bCheck, bUnlock, bStatus, bSet));
-        bSet.setOnClickListener(v -> new AlertDialog.Builder(this)
-                .setTitle("Set uplink?")
-                .setMessage("Uplink WAN akan memakai port LAN " + spPort.getSelectedItem() + ".\n\n"
-                        + "HP harus satu jaringan dengan ONT. Lanjutkan?")
-                .setPositiveButton("Ya, SET", (d, w) -> runTask(this::doSetUplink, bCheck, bUnlock, bStatus, bSet))
-                .setNegativeButton("Batal", null)
-                .show());
-
-        root.addView(main);
-        return root;
-    }
-
-    private LinearLayout.LayoutParams lp(int w, float wt, int pl, int pt, int pr, int pb) {
-        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(w, LinearLayout.LayoutParams.WRAP_CONTENT, wt);
-        lp.setMargins(pl, pt, pr, pb);
-        return lp;
+    private GradientDrawable gradientBg() {
+        GradientDrawable g = new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                new int[]{0xFF10122B, BG});
+        g.setShape(GradientDrawable.RECTANGLE);
+        return g;
     }
 
     private LinearLayout card() {
@@ -265,6 +76,247 @@ public class MainActivity extends Activity {
         return c;
     }
 
+    private LinearLayout.LayoutParams lp(int w, float wt, int l, int t, int r, int b) {
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(w, LinearLayout.LayoutParams.WRAP_CONTENT, wt);
+        lp.setMargins(l, t, r, b);
+        return lp;
+    }
+
+    private EditText field(String hint, String initial) {
+        EditText e = new EditText(this);
+        e.setHint(hint);
+        e.setHintTextColor(0xFF5F7694);
+        e.setTextColor(TEXT);
+        e.setTextSize(16);
+        e.setSingleLine(true);
+        e.setPadding(dp(14), dp(11), dp(14), dp(11));
+        e.setBackground(round(INPUT_BG, INPUT_STR, 12, 1));
+        if (initial != null) e.setText(initial);
+        return e;
+    }
+
+    private Button act(String text, int bg) {
+        Button b = new Button(this);
+        b.setText(text);
+        b.setAllCaps(false);
+        b.setTextSize(13);
+        b.setTypeface(Typeface.DEFAULT_BOLD);
+        b.setLetterSpacing(0.06f);
+        b.setTextColor(0xFFFFFFFF);
+        b.setMinHeight(dp(52));
+        b.setBackground(round(bg, 0, 14, 0));
+        b.setPadding(dp(8), 0, dp(8), 0);
+        LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+        lp.setMargins(0, 0, 0, dp(8));
+        b.setLayoutParams(lp);
+        return b;
+    }
+
+    private TextView sectionTitle(String s) {
+        TextView t = new TextView(this);
+        t.setText(s.toUpperCase());
+        t.setTextSize(11);
+        t.setLetterSpacing(0.18f);
+        t.setTypeface(Typeface.DEFAULT_BOLD);
+        t.setTextColor(GOLD);
+        t.setPadding(dp(2), dp(2), 0, dp(6));
+        return t;
+    }
+
+    private View buildUi() {
+        ScrollView root = new ScrollView(this);
+        root.setFillViewport(true);
+        root.setBackground(gradientBg());
+
+        LinearLayout main = new LinearLayout(this);
+        main.setOrientation(LinearLayout.VERTICAL);
+        int pad = dp(16);
+        main.setPadding(pad, dp(12), pad, dp(14));
+        main.setBackgroundColor(BG);
+
+        // ===== HEADER =====
+        TextView badge = new TextView(this);
+        badge.setText("  ⚡ D A F F I Y A N E T  ");
+        badge.setTextColor(GOLD);
+        badge.setTextSize(10);
+        badge.setTypeface(Typeface.DEFAULT_BOLD);
+        badge.setLetterSpacing(0.22f);
+        badge.setGravity(Gravity.CENTER);
+        badge.setBackground(round(0xFF2A2210, 0xFF4A3E18, 10, 1));
+        badge.setPadding(dp(10), dp(4), dp(10), dp(4));
+        LinearLayout.LayoutParams badgeLp = lp(LinearLayout.LayoutParams.WRAP_CONTENT, 0f, 0, dp(4), 0, dp(10));
+        badge.setLayoutParams(badgeLp);
+        main.addView(badge);
+
+        TextView title = new TextView(this);
+        title.setText("ADD WAN FH");
+        title.setTextSize(31);
+        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setTextColor(GOLD);
+        title.setShadowLayer(dp(10), 0, 0, 0xB0FFD54A);
+        main.addView(title);
+
+        TextView sub = new TextView(this);
+        sub.setText("Unlock & kelola HG6145F1 / HG6145D2 dari HP — tanpa PC, tanpa root.");
+        sub.setTextSize(12);
+        sub.setTextColor(MUTED);
+        sub.setPadding(0, dp(4), 0, dp(12));
+        main.addView(sub);
+
+        // ===== CARD: KONEKSI =====
+        LinearLayout c = card();
+        c.addView(sectionTitle("Koneksi ONT"));
+
+        TextView ipLabel = new TextView(this);
+        ipLabel.setText("IP ONT");
+        ipLabel.setTextColor(MUTED);
+        ipLabel.setTextSize(10);
+        ipLabel.setLetterSpacing(0.16f);
+        c.addView(ipLabel);
+        etIp = field("192.168.1.1", "192.168.1.1");
+        etIp.setTextColor(0xFF00E5FF);
+        c.addView(etIp);
+
+        TextView macLabel = new TextView(this);
+        macLabel.setText("MAC ONT");
+        macLabel.setTextColor(MUTED);
+        macLabel.setTextSize(10);
+        macLabel.setLetterSpacing(0.16f);
+        macLabel.setPadding(0, dp(10), 0, 0);
+        c.addView(macLabel);
+        etMac = field("94:6B:12:AB:CD:EF", null);
+        etMac.setTextColor(GOLD);
+        etMac.setInputType(0x00000001 | 0x00001000);
+        c.addView(etMac);
+        main.addView(c);
+
+        // ===== CARD: AKSI =====
+        c = card();
+        c.addView(sectionTitle("Aksi"));
+
+        Button bCheck = act("1.  CEK ONT", 0xFF0891B2);
+        Button bUnlock = act("2.  UNLOCK", 0xFFB45309);
+        Button bStatus = act("3.  STATUS UPLINK", 0xFF15803D);
+        Button bSet = act("4.  SET UPLINK", 0xFF7C3AED);
+        Button bAcl = act("5.  AKTIFKAN ACL (buka web UI)", 0xFF1E40AF);
+        c.addView(bCheck);
+        c.addView(bUnlock);
+        c.addView(bStatus);
+        // baris SET: spinner port + tombol
+        LinearLayout rowSet = new LinearLayout(this);
+        rowSet.setOrientation(LinearLayout.HORIZONTAL);
+        spPort = new android.widget.Spinner(this);
+        String[] ports = {"dev.eth.1", "dev.eth.2", "dev.eth.3", "dev.eth.4", "dev.eth.5"};
+        ArrayAdapter<String> ad = new ArrayAdapter<>(this, android.R.layout.simple_spinner_item, ports);
+        ad.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spPort.setAdapter(ad);
+        spPort.setBackground(round(INPUT_BG, INPUT_STR, 12, 1));
+        spPort.setPadding(dp(10), 0, dp(10), 0);
+        rowSet.addView(spPort, new LinearLayout.LayoutParams(dp(120), LinearLayout.LayoutParams.WRAP_CONTENT));
+        rowSet.addView(bSet, lp(0, 1f, dp(8), 0, 0, 0));
+        c.addView(rowSet);
+        c.addView(bAcl);
+        main.addView(c);
+
+        // ===== CARD: LOG =====
+        c = card();
+        TextView logHeader = new TextView(this);
+        logHeader.setText("● ● ●   output");
+        logHeader.setTextSize(10);
+        logHeader.setTypeface(Typeface.MONOSPACE);
+        logHeader.setTextColor(0xFFFF5C5C);
+        logHeader.setPadding(0, 0, 0, dp(8));
+        c.addView(logHeader);
+
+        tvLog = new TextView(this);
+        tvLog.setTextSize(10);
+        tvLog.setTypeface(Typeface.MONOSPACE);
+        tvLog.setTextColor(MINT);
+        tvLog.setBackgroundColor(0xFF05070F);
+        tvLog.setPadding(dp(12), dp(10), dp(12), dp(10));
+        tvLog.setBackground(round(0xFF05070F, 0xFF1E2A4A, 12, 1));
+        tvLog.setText("Selamat datang di Add WAN FH.\nSambungkan HP ke WiFi/LAN ONT,\nisi MAC, tekan CEK ONT.\n\n");
+        ScrollView logScroll = new ScrollView(this);
+        logScroll.addView(tvLog);
+        logScroll.setLayoutParams(new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(150)));
+        c.addView(logScroll);
+        main.addView(c);
+
+        // ===== CARD: DONASI / COMMIT (opsional) =====
+        c = card();
+        c.addView(sectionTitle("Dukung Daffiyanet — opsional"));
+
+        TextView devInfo = new TextView(this);
+        devInfo.setText("Tool ini gratis & open source. Kalau bermanfaat, dukung pengembangannya:");
+        devInfo.setTextSize(12);
+        devInfo.setTextColor(MUTED);
+        devInfo.setPadding(0, 0, 0, dp(8));
+        c.addView(devInfo);
+
+        Button bDonate = new Button(this);
+        bDonate.setText("💛  Donasi via QRIS · 08516163719");
+        bDonate.setAllCaps(false);
+        bDonate.setTextColor(0xFF1A1200);
+        bDonate.setTypeface(Typeface.DEFAULT_BOLD);
+        bDonate.setBackground(round(0xFFFFD54A, 0, 12, 0));
+        bDonate.setMinHeight(dp(46));
+        bDonate.setOnClickListener(v -> {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://indra725.github.io/donasi/"));
+            startActivity(i);
+        });
+        c.addView(bDonate);
+
+        Button bSub = new Button(this);
+        bSub.setText("▶  Subscribe @affiyaofficial di YouTube");
+        bSub.setAllCaps(false);
+        bSub.setTextColor(0xFFFFFFFF);
+        bSub.setBackground(round(0xFF7C3AED, 0, 12, 0));
+        bSub.setMinHeight(dp(46));
+        bSub.setOnClickListener(v -> {
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.youtube.com/@affiyaofficial"));
+            startActivity(i);
+        });
+        c.addView(bSub);
+
+        TextView note = new TextView(this);
+        note.setText("Tidak mengunci fitur apa pun — semua jalan gratis.");
+        note.setTextSize(10);
+        note.setTextColor(0xFF4A5180);
+        note.setPadding(0, dp(6), 0, 0);
+        c.addView(note);
+        main.addView(c);
+
+        TextView footer = new TextView(this);
+        footer.setText("github.com/Indra725/addwan-fiberhome-all-version · BUKAN produk resmi Fiberhome");
+        footer.setTextSize(10);
+        footer.setTextColor(0xFF4A5180);
+        footer.setGravity(Gravity.CENTER);
+        footer.setPadding(0, dp(4), 0, 0);
+        main.addView(footer);
+
+        bCheck.setOnClickListener(v -> runTask(() -> doCheckOnt(), bCheck, bUnlock, bStatus, bSet, bAcl));
+        bUnlock.setOnClickListener(v -> runTask(() -> doUnlock(), bCheck, bUnlock, bStatus, bSet, bAcl));
+        bStatus.setOnClickListener(v -> runTask(() -> doStatusUplink(), bCheck, bUnlock, bStatus, bSet, bAcl));
+        bSet.setOnClickListener(v -> new AlertDialog.Builder(this)
+                .setTitle("Set uplink?")
+                .setMessage("WAN akan memakai port LAN " + spPort.getSelectedItem() + ".\n\nHP harus satu jaringan dengan ONT. Lanjutkan?")
+                .setPositiveButton("Ya, SET", (d, w) -> runTask(() -> doSetUplink(), bCheck, bUnlock, bStatus, bSet, bAcl))
+                .setNegativeButton("Batal", null)
+                .show());
+        bAcl.setOnClickListener(v -> {
+            String ip = etIp.getText().toString().trim();
+            if (ip.isEmpty()) ip = "192.168.1.1";
+            Intent i = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + ip));
+            startActivity(i);
+            log("Membuka web UI ONT di http://" + ip + "\nSecurity > ACL Settings → Enable, isi IP, Save.");
+        });
+
+        root.addView(main);
+        return root;
+    }
+
     private interface Work { void run(); }
 
     private void runTask(Work w, final Button... buttons) {
@@ -272,26 +324,24 @@ public class MainActivity extends Activity {
         io.execute(() -> {
             try { w.run(); }
             catch (Exception e) { log("ERROR: " + e); }
-            finally {
-                runOnUiThread(() -> { for (Button b : buttons) b.setEnabled(true); });
-            }
+            finally { runOnUiThread(() -> { for (Button b : buttons) b.setEnabled(true); }); }
         });
     }
 
-    private void log(String s) {
-        runOnUiThread(() -> tvLog.append(s + "\n"));
-    }
+    private void log(String s) { runOnUiThread(() -> tvLog.append(s + "\n")); }
+
+    // ════════════════════════ LOGIKA ════════════════════════
 
     private String phoneIp() {
         try {
-            Enumeration<NetworkInterface> ifs = NetworkInterface.getNetworkInterfaces();
+            java.util.Enumeration<java.net.NetworkInterface> ifs = java.net.NetworkInterface.getNetworkInterfaces();
             String fallback = null;
             while (ifs.hasMoreElements()) {
-                NetworkInterface ni = ifs.nextElement();
+                java.net.NetworkInterface ni = ifs.nextElement();
                 if (ni.isLoopback() || !ni.isUp()) continue;
-                Enumeration<InetAddress> addrs = ni.getInetAddresses();
+                java.util.Enumeration<java.net.InetAddress> addrs = ni.getInetAddresses();
                 while (addrs.hasMoreElements()) {
-                    InetAddress a = addrs.nextElement();
+                    java.net.InetAddress a = addrs.nextElement();
                     if (a.isLoopbackAddress() || a.getHostAddress().indexOf('.') < 0) continue;
                     String h = a.getHostAddress();
                     if (h.startsWith("192.168.") || h.startsWith("10.") || h.startsWith("172.")) return h;
@@ -299,9 +349,7 @@ public class MainActivity extends Activity {
                 }
             }
             return fallback;
-        } catch (Exception e) {
-            return null;
-        }
+        } catch (Exception e) { return null; }
     }
 
     private String ontIp() {
@@ -321,52 +369,46 @@ public class MainActivity extends Activity {
         try {
             Process p = Runtime.getRuntime().exec(new String[]{"ping", "-c1", "-W1", ip});
             boolean ok = p.waitFor(4, java.util.concurrent.TimeUnit.SECONDS) && p.exitValue() == 0;
-            log("ping        : " + (ok ? "OK" : "GAGAL (lanjut cek port)"));
+            log("ping        : " + (ok ? "OK" : "GAGAL"));
         } catch (Exception e) { log("ping        : " + e); }
         for (int[] pr : new int[][]{{23, 0}, {80, 0}}) {
-            try (Socket s = new Socket()) {
+            try (java.net.Socket s = new java.net.Socket()) {
                 s.connect(new java.net.InetSocketAddress(ip, pr[0]), 2000);
                 log("TCP " + pr[0] + "       : TERBUKA");
-            } catch (Exception e) {
-                log("TCP " + pr[0] + "       : tutup");
-            }
+            } catch (Exception e) { log("TCP " + pr[0] + "       : tutup"); }
         }
         String login = httpRequest("GET", "http://" + ip + "/html/login_inter.html", null);
         log("login page  : HTTP " + login.split("\n", 2)[0] + " (" + login.length() + " bytes)");
         String logo = httpRequest("GET", "http://" + ip + "/image/logo_Intelbras_fiberhome.png", null);
-        if (logo.startsWith("200") && logo.length() > 1000) {
-            log("custom webui: AKTIF");
-        } else {
-            log("custom webui: belum terdeteksi -------- perlu UNLOCK dulu");
-        }
+        log(logo.startsWith("200") && logo.length() > 1000 ? "custom webui: AKTIF" : "custom webui: belum terdeteksi");
         log("IP HP saya  : " + phoneIp());
     }
 
     private void doUnlock() {
         String ip = ontIp();
         String mac = etMac.getText().toString().trim();
-        if (mac.replaceAll("[^0-9a-fA-F]", "").length() < 6) { log("MAC kosong/tidak valid -------- isi dulu"); return; }
+        if (mac.replaceAll("[^0-9a-fA-F]", "").length() < 6) { log("MAC kosong/tidak valid — isi dulu"); return; }
         log("=== UNLOCK " + ip + " ===");
         String pass = macPassword(mac);
         log("password    : " + pass);
         String localIp = phoneIp();
-        if (localIp == null) { log("ERROR: IP HP tidak terdeteksi -------- sambungkan ke WiFi ONT"); return; }
+        if (localIp == null) { log("ERROR: IP HP tidak terdeteksi — sambungkan ke WiFi ONT"); return; }
         log("IP HP       : " + localIp);
 
-        FileServer server = new FileServer(localIp);
+        FileServer server = new FileServer();
         Thread st = new Thread(server);
         st.setDaemon(true);
         st.start();
         String url = "http://" + localIp + ":" + server.port + "/custom-webui.sh";
         log("URL script  : " + url);
 
-        try (Socket sock = new Socket()) {
+        try (java.net.Socket sock = new java.net.Socket()) {
             sock.connect(new java.net.InetSocketAddress(ip, 23), 5000);
             sock.setSoTimeout(12000);
             Telnet t = new Telnet(sock);
             t.readUntil("ogin:"); t.send("gpon\r\n");
             t.readUntil("assword:"); t.send(pass + "\r\n");
-            t.readUntil(">"); log("login       : OK (masuk CLI)");
+            t.readUntil(">"); log("login       : OK");
             t.send("enable\r\n"); t.readUntil("assword:"); t.send(pass + "\r\n");
             Thread.sleep(700); t.drain(); log("enable      : OK");
             for (String cmd : new String[]{
@@ -385,7 +427,7 @@ public class MainActivity extends Activity {
             Thread.sleep(1500);
             server.stop();
             doCheckOnt();
-            log("=== UNLOCK SELESAI -------- buka http://" + ip + " di browser HP ===");
+            log("=== UNLOCK SELESAI — buka http://" + ip + " di browser HP ===");
         } catch (Exception e) {
             server.stop();
             log("UNLOCK GAGAL: " + e);
@@ -399,19 +441,15 @@ public class MainActivity extends Activity {
         String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax",
                 "ajaxmethod=get_uplink_info&_=" + (System.currentTimeMillis() % 1000000000));
         log(resp);
-        if (resp.startsWith("200")) {
-            log("\nuplink_type = dev.eth.N berarti port LAN itu jadi uplink.");
-        } else {
-            log("Gagal baca -------- coba unlock dulu, atau cek via F12 Console:");
-            log("XHR.get(\"get_uplink_info\", null, function(d){console.log(JSON.stringify(d))})");
-        }
+        if (resp.startsWith("200")) log("\nuplink_type = dev.eth.N artinya port LAN itu jadi uplink.");
+        else log("Gagal baca — coba unlock dulu, atau cek via F12 Console: XHR.get(\"get_uplink_info\",null,d=>console.log(d))");
     }
 
     private String doSetUplink() {
         String ip = ontIp();
         String port = String.valueOf(spPort.getSelectedItem());
         String body = "ajaxmethod=set_uplink_info&_=" + (System.currentTimeMillis() % 1000000000)
-                + "&uplink_type=" + URLEncoder.encode(port);
+                + "&uplink_type=" + java.net.URLEncoder.encode(port);
         log("=== SET UPLINK " + ip + " -> " + port + " ===");
         String resp = httpRequest("POST", "http://" + ip + "/cgi-bin/ajax", body);
         log(resp);
@@ -419,10 +457,10 @@ public class MainActivity extends Activity {
     }
 
     private String httpRequest(String method, String url, String body) {
-        HttpURLConnection conn = null;
+        java.net.HttpURLConnection conn = null;
         try {
             java.net.URL u = new java.net.URL(url);
-            conn = (HttpURLConnection) u.openConnection();
+            conn = (java.net.HttpURLConnection) u.openConnection();
             conn.setRequestMethod(method);
             conn.setConnectTimeout(4000);
             conn.setReadTimeout(8000);
@@ -430,16 +468,12 @@ public class MainActivity extends Activity {
             if (body != null) {
                 conn.setDoOutput(true);
                 conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-            }
-            if (body != null) {
-                byte[] b = body.getBytes("UTF-8");
-                try (OutputStream os = conn.getOutputStream()) { os.write(b); }
+                try (java.io.OutputStream os = conn.getOutputStream()) { os.write(body.getBytes("UTF-8")); }
             }
             int code = conn.getResponseCode();
-            InputStream is = code < 400 ? conn.getInputStream() : conn.getErrorStream();
+            java.io.InputStream is = code < 400 ? conn.getInputStream() : conn.getErrorStream();
             byte[] buf = new byte[65536];
-            int n = 0;
-            int r;
+            int n = 0, r;
             while (n < buf.length && (r = is.read(buf, n, buf.length - n)) != -1) n += r;
             String text = new String(buf, 0, n, "UTF-8");
             return code + "\n" + (text.length() > 3000 ? text.substring(0, 3000) + "\n...(truncated)" : text);
@@ -450,20 +484,19 @@ public class MainActivity extends Activity {
         }
     }
 
-    /** Telnet minimal (strip IAC) untuk busybox ONT. */
     static final class Telnet {
-        private final Socket s;
+        private final java.net.Socket s;
         private final java.io.BufferedInputStream in;
-        private final OutputStream out;
+        private final java.io.OutputStream out;
         private byte[] buf = new byte[0];
 
-        Telnet(Socket s) throws IOException {
+        Telnet(java.net.Socket s) throws java.io.IOException {
             this.s = s;
             in = new java.io.BufferedInputStream(s.getInputStream());
             out = s.getOutputStream();
         }
 
-        void send(String text) throws IOException { out.write(text.getBytes("US-ASCII")); out.flush(); }
+        void send(String text) throws java.io.IOException { out.write(text.getBytes("US-ASCII")); out.flush(); }
 
         private String stripIac(byte[] d) {
             StringBuilder sb = new StringBuilder();
@@ -486,9 +519,9 @@ public class MainActivity extends Activity {
             return sb.toString();
         }
 
-        String readUntil(String marker) throws IOException { return readUntil(marker, 10000); }
+        String readUntil(String marker) throws java.io.IOException { return readUntil(marker, 10000); }
 
-        String readUntil(String marker, int timeoutMs) throws IOException {
+        String readUntil(String marker, int timeoutMs) throws java.io.IOException {
             long deadline = System.currentTimeMillis() + timeoutMs;
             while (System.currentTimeMillis() < deadline) {
                 pump(300);
@@ -508,7 +541,7 @@ public class MainActivity extends Activity {
             return acc;
         }
 
-        String readAll(int timeoutMs) throws IOException {
+        String readAll(int timeoutMs) throws java.io.IOException {
             long deadline = System.currentTimeMillis() + timeoutMs;
             while (System.currentTimeMillis() < deadline) pump(400);
             String acc = new String(buf, 0, buf.length, "UTF-8");
@@ -516,9 +549,9 @@ public class MainActivity extends Activity {
             return acc;
         }
 
-        void drain() throws IOException { this.buf = new byte[0]; }
+        void drain() throws java.io.IOException { this.buf = new byte[0]; }
 
-        private void pump(int millis) throws IOException {
+        private void pump(int millis) throws java.io.IOException {
             int avail = in.available();
             if (avail <= 0) { try { Thread.sleep(millis); } catch (InterruptedException ignored) {} return; }
             byte[] tmp = new byte[avail];
@@ -530,38 +563,37 @@ public class MainActivity extends Activity {
             buf = grown;
         }
 
-        void close() { try { s.close(); } catch (IOException ignored) {} }
+        void close() { try { s.close(); } catch (java.io.IOException ignored) {} }
     }
 
-    /** Mini HTTP server: melayani custom-webui.sh dari assets untuk ONT. */
     final class FileServer implements Runnable {
         volatile boolean running = true;
         final int port;
-        private final ServerSocket ss;
+        private final java.net.ServerSocket ss;
 
-        FileServer(String bindIp) {
-            try { ss = new ServerSocket(0); } catch (IOException e) { throw new RuntimeException(e); }
+        FileServer() {
+            try { ss = new java.net.ServerSocket(0); } catch (java.io.IOException e) { throw new RuntimeException(e); }
             this.port = ss.getLocalPort();
         }
 
-        @Override public void run() {
+        public void run() {
             try { ss.setSoTimeout(45000); } catch (java.net.SocketException ignored) {}
             long deadline = System.currentTimeMillis() + 60000;
             while (running && System.currentTimeMillis() < deadline) {
                 try {
-                    Socket c = ss.accept();
+                    java.net.Socket c = ss.accept();
                     new Thread(() -> serve(c)).start();
                 } catch (java.net.SocketTimeoutException e) {
                     break;
-                } catch (IOException e) {
+                } catch (java.io.IOException e) {
                     break;
                 }
             }
-            try { ss.close(); } catch (IOException ignored) {}
+            try { ss.close(); } catch (java.io.IOException ignored) {}
         }
 
-        private void serve(Socket c) {
-            try (InputStream cis = c.getInputStream(); OutputStream cos = c.getOutputStream()) {
+        private void serve(java.net.Socket c) {
+            try (java.io.InputStream cis = c.getInputStream(); java.io.OutputStream cos = c.getOutputStream()) {
                 byte[] head = new byte[8192];
                 int n = cis.read(head);
                 String req = new String(head, 0, Math.max(0, n), "ISO-8859-1");
@@ -570,7 +602,7 @@ public class MainActivity extends Activity {
                     return;
                 }
                 byte[] script;
-                try (InputStream is = getAssets().open("custom-webui.sh")) {
+                try (java.io.InputStream is = getAssets().open("custom-webui.sh")) {
                     script = readAllBytes(is);
                 }
                 String header = "HTTP/1.1 200 OK\r\nContent-Type: application/octet-stream\r\nContent-Length: "
@@ -578,14 +610,14 @@ public class MainActivity extends Activity {
                 cos.write(header.getBytes("US-ASCII"));
                 cos.write(script);
                 cos.flush();
-            } catch (IOException ignored) {
+            } catch (java.io.IOException ignored) {
             }
         }
 
-        void stop() { running = false; try { ss.close(); } catch (IOException ignored) {} }
+        void stop() { running = false; try { ss.close(); } catch (java.io.IOException ignored) {} }
     }
 
-    private static byte[] readAllBytes(InputStream is) throws IOException {
+    private static byte[] readAllBytes(java.io.InputStream is) throws java.io.IOException {
         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
         byte[] tmp = new byte[8192];
         int n;

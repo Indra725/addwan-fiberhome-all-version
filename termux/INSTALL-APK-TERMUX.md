@@ -15,18 +15,18 @@ pkg install curl termux-api
 
 ## 3. Download APK langsung dari GitHub Releases
 
-Versi terbaru: **v2.3**
+Versi terbaru: **v2.4**
 
 ```bash
 curl -L -o Add_WAN_FH_Mobile.apk \
-  https://github.com/Indra725/addwan-fiberhome-all-version/releases/download/v2.3/Add_WAN_FH_Mobile.apk
+  https://github.com/Indra725/addwan-fiberhome-all-version/releases/download/v2.4/Add_WAN_FH_Mobile.apk
 ```
 
 > `-L` = ikuti redirect (GitHub relaese download pakai HTTP 302). Kalau `curl` belum ada:
 > ```bash
 > pkg install wget
 > wget -O Add_WAN_FH_Mobile.apk \
->   https://github.com/Indra725/addwan-fiberhome-all-version/releases/download/v2.3/Add_WAN_FH_Mobile.apk
+>   https://github.com/Indra725/addwan-fiberhome-all-version/releases/download/v2.4/Add_WAN_FH_Mobile.apk
 > ```
 
 ## 4. Verifikasi APK (wajib)
@@ -39,7 +39,7 @@ ls -l Add_WAN_FH_Mobile.apk
 Hasilnya **HARUS**:
 
 ```
-D371BBD551BA8E319506B0DF000117E9540863AEA000F86023017F60F835E59E  Add_WAN_FH_Mobile.apk
+A09081061AD3FF2837D55699D345A4166C96B7D3B545524CBDE378D032CA6EFE  Add_WAN_FH_Mobile.apk
 455529 bytes
 ```
 
@@ -79,7 +79,7 @@ pm uninstall com.daffiyanet.addwan
 
 ```bash
 pkg update && pkg install curl termux-api
-curl -L -o Add_WAN_FH_Mobile.apk https://github.com/Indra725/addwan-fiberhome-all-version/releases/download/v2.3/Add_WAN_FH_Mobile.apk
+curl -L -o Add_WAN_FH_Mobile.apk https://github.com/Indra725/addwan-fiberhome-all-version/releases/download/v2.4/Add_WAN_FH_Mobile.apk
 sha256sum Add_WAN_FH_Mobile.apk
 termux-open Add_WAN_FH_Mobile.apk
 ```
