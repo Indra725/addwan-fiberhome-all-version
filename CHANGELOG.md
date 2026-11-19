@@ -2,6 +2,12 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.11] - 2026-11-19
+
+### Diperbaiki
+- **Header tidak terpotong** di HP dengan status bar/notch — padding atas sekarang otomatis sesuai `status_bar_height` HP Anda.
+- Rilis **v2.5** (`versionCode=6`, SHA256 `BDB36AE8...`, 1.096.633 byte).
+
 ## [v2.10] - 2026-11-19
 
 ### Ditambahkan

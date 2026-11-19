@@ -48,6 +48,11 @@ public class MainActivity extends Activity {
 
     private int dp(int v) { return Math.round(v * getResources().getDisplayMetrics().density); }
 
+    private int statusBarHeight() {
+        int resId = getResources().getIdentifier("status_bar_height", "dimen", "android");
+        return resId > 0 ? getResources().getDimensionPixelSize(resId) : dp(24);
+    }
+
     private GradientDrawable round(int fill, int stroke, int radiusDp, int strokeWDp) {
         GradientDrawable d = new GradientDrawable();
         d.setShape(GradientDrawable.RECTANGLE);
@@ -132,7 +137,7 @@ public class MainActivity extends Activity {
         LinearLayout main = new LinearLayout(this);
         main.setOrientation(LinearLayout.VERTICAL);
         int pad = dp(16);
-        main.setPadding(pad, dp(12), pad, dp(14));
+        main.setPadding(pad, dp(12) + statusBarHeight(), pad, dp(14));
         main.setBackgroundColor(BG);
 
         // ===== HEADER =====
