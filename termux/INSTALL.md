@@ -59,6 +59,10 @@ python termux/addwan.py status 192.168.1.1
 python termux/addwan.py set 192.168.1.1 dev.eth.1
 ```
 
+## 4b. Kalau mau manual (tanpa tool)
+
+Lihat [`TELNET-MANUAL.md`](TELNET-MANUAL.md) — sambung `busybox telnet`, ketik `gpon` / password, `enable`, masuk `Config#`. Di file itu juga dijelaskan kenapa layar terlihat kacau saat pakai `nc`.
+
 ## 5. Alur kerja di lokasi pelanggan
 
 1. HP konek ke WiFi/LAN ONT (mis. SSID ONT sendiri, IP `192.168.1.1`)
