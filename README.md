@@ -11,7 +11,7 @@ Tool Windows untuk teknisi ISP / installer jaringan yang bekerja dengan modem **
 
 ## Isi repo
 
-Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH (Add WAN Fiberhome). Binari didistribusikan lewat **[Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases)**, bukan di git tree.
+Repo ini menyimpan **arsip semua versi** tool Add_WAN_FH (Add WAN Fiberhome) & utility konfigurasi Fiberhome. Binari didistribusikan lewat **[Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases)**, bukan di git tree. Riwayat perubahan: [`CHANGELOG.md`](CHANGELOG.md).
 
 | Versi | File | Tanggal | Rilis |
 |---|---|---|---|
