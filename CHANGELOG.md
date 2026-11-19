@@ -2,6 +2,14 @@
 
 Format: [Keep a Changelog](https://keepachangelog.com/id/) - binari dirilis via [Releases](https://github.com/Indra725/addwan-fiberhome-all-version/releases).
 
+## [v2.3] - 2026-11-19
+
+### Ditambahkan
+- `termux/custom-webui.bin` (file unlock web UI, dari proyek numberonedz, MIT)
+- `addwan.py`: auto-probe shell tersembunyi (shell/sh/system/busybox/debug/su/execute/run/linux/console/cmd) dan fallback ke panduan **Local Upgrade** bila CLI ONT terkunci (`% Unknown command.`)
+- `INSTALL.md`: section "CLI terkunci -> Local Upgrade"
+- Mock test kini 13/13 PASS (dua skenario: RP4423 shell terbuka & CLI terkunci)
+
 ## [v2.2] - 2026-11-19
 
 ### Ditambahkan

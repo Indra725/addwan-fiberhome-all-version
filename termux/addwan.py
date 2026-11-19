@@ -214,7 +214,39 @@ def unlock_ont(ip, mac):
         t.send('enable')
         t.read_until(b'assword:')
         t.send(password)
-        t.read_all(timeout=3)
+        banner = t.read_all(timeout=3)
+        if banner:
+            last = banner.decode(errors='ignore').strip().splitlines()
+            if last:
+                print('enable : ' + last[-1].strip())
+
+        print('probe shell tersembunyi...')
+        shell_found = False
+        for cand in ['shell', 'sh', 'system', 'busybox', 'debug', 'su', 'execute', 'run', 'linux', 'console', 'cmd']:
+            t.send(cand)
+            test = t.read_all(timeout=2.5)
+            out = test.decode(errors='ignore')
+            if '% Unknown' in out:
+                print('   %s -> tidak dikenal' % cand)
+                continue
+            print('   %s -> SHELL DAPAT' % cand)
+            shell_found = True
+            break
+        if not shell_found:
+            print('')
+            print('=' * 50)
+            print('CLI ONT TERKUNCI - unlock shell via telnet tidak bisa.')
+            print('Pakai cara bawaan yang diandalkan (Local Upgrade):')
+            print('  1. Buka http://%s -> login admin' % ip)
+            print('  2. Menu: Management > Device Management > Local Upgrade')
+            print('     (nama menu bisa beda: System > Firmware / Maintenance > Upgrade)')
+            print('  3. Upload "termux/custom-webui.bin" -> klik "Update File"')
+            print('  4. Muncul "Upgrade failed" (NORMAL) -> refresh halaman')
+            print('  5. Custom webui aktif, ONT bisa di-setting dari browser')
+            print('=' * 50)
+            t.close()
+            httpd.shutdown()
+            return 0
         for cmd in ('wget %s -O /var/custom-webui.sh' % url,
                     'chmod +x /var/custom-webui.sh',
                     '/var/custom-webui.sh'):

@@ -63,6 +63,20 @@ python termux/addwan.py set 192.168.1.1 dev.eth.1
 
 Lihat [`TELNET-MANUAL.md`](TELNET-MANUAL.md) — sambung `busybox telnet`, ketik `gpon` / password, `enable`, masuk `Config#`. Di file itu juga dijelaskan kenapa layar terlihat kacau saat pakai `nc`.
 
+## 4c. Unlock gagal / CLI terkunci (`% Unknown command.`)
+
+Kalau setelah `enable`, semua perintah (`wget`, `chmod`, dsb) ditolak `% Unknown command.`, CLI ONT Anda **terkunci** — unlock via telnet tidak bisa dipakai.
+
+**Pakai metode Local Upgrade (paling andal):**
+
+1. Buka `http://192.168.1.1` di browser HP → login admin
+2. Menu: **Management > Device Management > Local Upgrade** (nama menu bisa beda per firmware: `System > Firmware` / `Maintenance > Upgrade`)
+3. Upload file **`termux/custom-webui.bin`** → klik **"Update File"**
+4. Muncul **"Upgrade failed"** — **itu normal** (patch berbasis "gagal upgrade")
+5. **Refresh** halaman → custom webui aktif
+
+Tool `addwan.py` (mulai v2.3) mendeteksi CLI terkunci otomatis dan mencetak langkah ini sendiri.
+
 ## 5. Alur kerja di lokasi pelanggan
 
 1. HP konek ke WiFi/LAN ONT (mis. SSID ONT sendiri, IP `192.168.1.1`)

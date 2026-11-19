@@ -26,6 +26,7 @@ MAC = '94:6B:12:AB:CD:EF'
 PASSWORD = 'Fh@ABCDEF'  # 6 hex terakhir MAC (uppercase)
 
 LOG = []  # (kind, method/params) tercatat dari HTTP
+CLI_MODE = ['open']  # 'open' = shell bebas (RP4423) | 'locked' = CLI terkunci (% Unknown command.)
 
 
 def telnet_server():
@@ -71,6 +72,12 @@ def handle_client(conn):
             cmd = readline()
             if cmd == '':
                 break
+            if CLI_MODE[0] == 'locked':
+                conn.sendall(b'% Unknown command.\r\nConfig# ')
+                continue
+            if cmd.strip() == 'shell':
+                conn.sendall(b'busybox shell\r\n~ # ')
+                continue
             if 'wget' in cmd and 'custom-webui.sh' in cmd:
                 conn.sendall(b'saving to /var/custom-webui.sh... 567854 bytes written\r\nConfig# ')
             elif cmd.startswith('chmod'):
@@ -78,7 +85,7 @@ def handle_client(conn):
             elif cmd.strip() == '/var/custom-webui.sh':
                 conn.sendall(b'Extracting payload...\r\nDone\r\nConfig# ')
             else:
-                conn.sendall(b'Config# ')
+                conn.sendall(b'% Unknown command.\r\nConfig# ')
     except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError, socket.timeout, AssertionError, OSError):
         pass
     conn.close()
@@ -171,6 +178,12 @@ def main():
     check('set: HTTP 200/success', 'HTTP 200' in r.stdout and 'success' in r.stdout, r.stdout)
     set_calls = [p for _, m, p in LOG if m == 'set_uplink_info']
     check('set: parameter benar di mock', bool(set_calls) and set_calls[0].get('uplink_type') == ['dev.eth.3'], str(set_calls))
+
+    CLI_MODE[0] = 'locked'
+    r = run_tool(env, ['unlock', '127.0.0.1', MAC], timeout=40)
+    check('locked: tool mendeteksi CLI terkunci', 'CLI ONT TERKUNCI' in r.stdout, r.stdout)
+    check('locked: tool memberikan panduan Local Upgrade', 'Local Upgrade' in r.stdout, r.stdout)
+    check('locked: keluar bersih (rc=0)', r.returncode == 0, 'rc=%s' % r.returncode)
 
     print()
     failed = [n for n, ok in results if not ok]
